@@ -1,0 +1,17 @@
+{
+  "name": "archie",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "bun build src/app.ts --outdir=docs --watch",
+    "build": "bun run scripts/build.ts",
+    "serve": "bun --bun run scripts/serve.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.9.3"
+  }
+}

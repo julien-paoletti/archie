@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archie - System Architecture Diagram Editor</title>
+    <link rel="stylesheet" href="./css/styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.35/dist/tabler-icons.min.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="header-brand">
+                <img src="./assets/logo-archie.png" width="24px" height="24px" />
+                <h1>Archie</h1>
+                <span class="subtitle">System Architecture Diagram Editor</span>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-secondary" id="new-btn">
+                    <i class="ti ti-file-plus"></i>
+                    <span>New</span>
+                </button>
+                <button class="btn btn-secondary" id="open-btn">
+                    <i class="ti ti-folder-open"></i>
+                    <span>Open</span>
+                </button>
+                <button class="btn btn-primary" id="save-btn">
+                    <i class="ti ti-device-floppy"></i>
+                    <span>Save</span>
+                </button>
+                <button class="btn btn-secondary" id="export-png-btn">
+                    <i class="ti ti-photo"></i>
+                    <span>Export PNG</span>
+                </button>
+            </div>
+        </header>
+
+        <main class="workspace">
+            <aside class="palette" id="palette">
+                <h2>
+                    <span>Elements</span>
+                    <button class="palette-toggle" id="palette-toggle" title="Toggle palette">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                    </button>
+                </h2>
+                <div class="palette-items" id="palette-items">
+                    <!-- Palette items will be rendered here -->
+                </div>
+            </aside>
+
+            <section class="editor-container" id="editor-container">
+                <div class="canvas-world" id="canvas-world">
+                    <canvas id="editor-canvas"></canvas>
+                </div>
+            </section>
+        </main>
+
+        <!-- Toast notifications -->
+        <div id="toast-container" class="toast-container"></div>
+
+        <!-- Context Menu -->
+        <div id="context-menu" class="context-menu" style="display: none;">
+            <div class="context-menu-items" id="context-menu-items">
+                <!-- Menu items will be dynamically populated -->
+            </div>
+        </div>
+
+        <!-- Modal -->
+        <div id="modal-overlay" class="modal-overlay" style="display: none;">
+            <div class="modal">
+                <div class="modal-header">
+                    <h3 id="modal-title"></h3>
+                </div>
+                <div class="modal-body">
+                    <p id="modal-message"></p>
+                    <input type="text" id="modal-input" class="modal-input" style="display: none;" />
+                </div>
+                <div class="modal-actions" id="modal-actions"></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="./app.js"></script>
+</body>
+
+</html>

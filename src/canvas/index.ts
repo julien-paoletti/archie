@@ -1,0 +1,58 @@
+/**
+ * Canvas Drawing Library for Architecture Diagrams
+ * Re-exports all elements for backward compatibility
+ */
+
+// Types
+export * from './types';
+
+// Constants
+export * from './constants';
+
+// Core classes
+export { CanvasRenderer } from './renderer';
+export { ShapeDrawer } from './shape-drawer';
+export { DiagramElement } from './diagramElement';
+export { ContainerElement } from './containerElement';
+
+// Elements
+export { Component } from './component';
+export { User } from './user';
+export { Module } from './module';
+export { Domain } from './domain';
+export { Boundary } from './boundary';
+export { Note } from './note';
+export { NumberedDot } from './numberedDot';
+export { Label } from './label';
+export { Tag } from './tag';
+
+// Connections
+export { Connection, getControlPoint, controlDistance, distance } from './connection';
+
+// Icons
+export { IconCache, iconCache, TABLER_ICONS, getAvailableIcons, preloadIcons } from './iconCache';
+
+// Registry
+export { ElementRegistry, elementRegistry } from './registry';
+
+// Register default components
+import { elementRegistry } from './registry';
+import { Component } from './component';
+import { User } from './user';
+import { Module } from './module';
+import { Domain } from './domain';
+import { Boundary } from './boundary';
+import { Note } from './note';
+import { NumberedDot } from './numberedDot';
+import { Label } from './label';
+import { Tag } from './tag';
+
+elementRegistry.register(Component);
+elementRegistry.register(User);
+elementRegistry.register(Module);
+elementRegistry.register(Domain);
+elementRegistry.register(Boundary);
+elementRegistry.register(Note);
+elementRegistry.register(NumberedDot);
+elementRegistry.register(Label);
+elementRegistry.register(Tag);
