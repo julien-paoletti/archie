@@ -18,6 +18,7 @@ import {
 import type { EditorState } from './editorState';
 import { screenToWorld, stopAutoScroll } from './viewportHandler';
 import { selectElement } from './selectionHandler';
+import { resolveOverlapInContainer, resolveOverlapAtLevel } from './dragDropHandler';
 
 export interface MouseUpCallbacks {
     render: () => void;
@@ -222,6 +223,7 @@ function handleDragEnd(state: EditorState): void {
                 if (currentParent) currentParent.removeChild(comp);
             }
             if (isNewToContainer) targetContainer.addChild(comp);
+            resolveOverlapInContainer(comp, targetContainer);
         }
 
         targetContainer.recalculateBounds();
@@ -240,6 +242,14 @@ function handleDragEnd(state: EditorState): void {
                         parent.removeChild(comp);
                     }
                 }
+            }
+            resolveOverlapAtLevel(comp, state.elements);
+        }
+
+        // Recalculate bounds for any containers whose children moved
+        for (const el of state.elements) {
+            if ((el instanceof Module || el instanceof Domain) && el.children.length > 0) {
+                el.recalculateBounds();
             }
         }
     }
