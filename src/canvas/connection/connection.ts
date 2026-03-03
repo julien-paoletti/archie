@@ -225,6 +225,15 @@ export class Connection {
         }
     }
 
+    reverse(): void {
+        [this.sourcePoint, this.targetPoint] = [this.targetPoint, this.sourcePoint];
+        [this.customControlPoint1, this.customControlPoint2] = [this.customControlPoint2, this.customControlPoint1];
+        this.intermediateAnchors.reverse();
+        for (const anchor of this.intermediateAnchors) {
+            [anchor.handleIn, anchor.handleOut] = [anchor.handleOut, anchor.handleIn];
+        }
+    }
+
     toJSON(): ConnectionOptions {
         const json: ConnectionOptions = {
             id: this.id,

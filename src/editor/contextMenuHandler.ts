@@ -29,6 +29,7 @@ export interface ContextMenuCallbacks {
     addIntermediateAnchor: (connection: Connection, pos: Point) => void;
     removeIntermediateAnchor: (connection: Connection, index: number) => void;
     resetConnectionCurve: (connection: Connection) => void;
+    reverseConnection: (connection: Connection) => void;
     removeConnection: (connection: Connection) => void;
     changeConnectionLineStyle: (connection: Connection, style: LineStyle) => void;
     changeConnectionArrowType: (connection: Connection, type: ArrowType) => void;
@@ -160,6 +161,11 @@ export class ContextMenuHandler {
             icon: 'refresh-cw',
             label: 'Reset Curve',
             action: () => this.callbacks.resetConnectionCurve(connection)
+        });
+        items.push({
+            icon: 'transfer-vertical',
+            label: 'Reverse Direction',
+            action: () => this.callbacks.reverseConnection(connection)
         });
 
         // Line style options

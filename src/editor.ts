@@ -132,6 +132,12 @@ export class Editor {
             addIntermediateAnchor: (conn, pos) => connection.addIntermediateAnchor(this.state, conn, pos, () => this.saveState(), () => this.saveToStorage(), () => this.render()),
             removeIntermediateAnchor: (conn, idx) => connection.removeIntermediateAnchor(this.state, conn, idx, () => this.saveState(), () => this.saveToStorage(), () => this.render()),
             resetConnectionCurve: (conn) => connection.resetConnectionCurve(this.state, conn, () => this.saveState(), () => this.saveToStorage(), () => this.render()),
+            reverseConnection: (conn) => {
+                this.saveState();
+                conn.reverse();
+                this.saveToStorage();
+                this.render();
+            },
             removeConnection: (conn) => connection.removeConnection(this.state, conn, () => this.saveState(), () => this.saveToStorage(), () => this.render()),
             changeBorderColor: (el, color) => {
                 this.saveState();
