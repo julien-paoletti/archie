@@ -8,6 +8,7 @@ import {
     Component,
     Domain,
     Module,
+    System,
     Note,
     NumberedDot,
     Tag,
@@ -41,6 +42,7 @@ export interface MinimapCallbacks {
 }
 
 function getElementColor(el: DiagramElement): string {
+    if (el instanceof System) return MINIMAP_ELEMENT_COLORS.system;
     if (el instanceof Domain) return MINIMAP_ELEMENT_COLORS.domain;
     if (el instanceof Module) return MINIMAP_ELEMENT_COLORS.module;
     if (el instanceof Note) return (el as Note).backgroundColor;
@@ -57,7 +59,7 @@ function getElementBorderColor(el: DiagramElement): string {
     if (el instanceof Boundary) return (el as Boundary).borderColor;
     if (el instanceof Component) return (el as Component).borderColor;
     if (el instanceof User) return (el as User).borderColor;
-    if (el instanceof Domain || el instanceof Module) return el.borderColor;
+    if (el instanceof Domain || el instanceof Module || el instanceof System) return el.borderColor;
     if (el instanceof Note) return (el as Note).borderColor;
     if (el instanceof Label || el instanceof NumberedDot || el instanceof Tag) return 'transparent';
     return '#D4D4D8';

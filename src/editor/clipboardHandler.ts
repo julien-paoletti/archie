@@ -11,6 +11,7 @@ import {
     Module,
     Note,
     NumberedDot,
+    System,
     Tag,
     User,
     elementRegistry,
@@ -70,7 +71,7 @@ export function copy(state: EditorState, clipboard: SerializedComponent[]): bool
         if (el instanceof Boundary && el.labelPosition !== 'top-left') {
             base.labelPosition = el.labelPosition;
         }
-        if ((el instanceof Component || el instanceof User || el instanceof Module || el instanceof Domain || el instanceof Boundary) && el.borderColor) {
+        if ((el instanceof Component || el instanceof User || el instanceof Module || el instanceof Domain || el instanceof System || el instanceof Boundary) && el.borderColor) {
             base.borderColor = el.borderColor;
         }
         clipboard.push(base);

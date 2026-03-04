@@ -4,7 +4,7 @@
  */
 
 import type { DiagramElement, Connection, Point, LineStyle, ArrowType, CurveType } from '../canvas/index';
-import { Boundary, Component, Domain, Label, Module, Note, Tag, User, COLOR_PALETTE, NOTE_COLORS, TAG_COLORS } from '../canvas/index';
+import { Boundary, Component, Domain, Label, Module, Note, System, Tag, User, COLOR_PALETTE, NOTE_COLORS, TAG_COLORS } from '../canvas/index';
 
 export interface ContextMenuItem {
     icon?: string;
@@ -315,7 +315,7 @@ export class ContextMenuHandler {
         }
 
         // Border color palette (for elements with borderColor)
-        if (element instanceof Component || element instanceof User || element instanceof Module || element instanceof Domain || element instanceof Boundary) {
+        if (element instanceof Component || element instanceof User || element instanceof Module || element instanceof Domain || element instanceof System || element instanceof Boundary) {
             items.push({ separator: true });
             items.push({
                 colorPalette: {

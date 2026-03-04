@@ -10,6 +10,7 @@ import type {
     DiagramElement,
     Domain,
     Module,
+    System,
     Point,
     ResizeHandle
 } from '../canvas/index';
@@ -89,7 +90,7 @@ export interface EditorState {
     boxSelectCurrent: Point | null;
 
     // Container drop
-    potentialDropTarget: Module | Domain | null;
+    potentialDropTarget: Module | Domain | System | null;
 
     // Viewport
     scale: number;

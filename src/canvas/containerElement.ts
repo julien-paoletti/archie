@@ -80,6 +80,7 @@ export abstract class ContainerElement extends DiagramElement {
     }
 
     addChild(component: DiagramElement): void {
+        if (component === this) return; // prevent self-reference
         if (!this._children.includes(component)) {
             this._children.push(component);
             component.parentId = this.id;
@@ -177,11 +178,18 @@ export abstract class ContainerElement extends DiagramElement {
     // Movement
     // ========================================================================
 
-    override moveBy(dx: number, dy: number): void {
+    override moveBy(dx: number, dy: number, _visited?: Set<string>): void {
+        const visited = _visited ?? new Set<string>();
+        if (visited.has(this.id)) return; // break any accidental cycle
+        visited.add(this.id);
         super.moveBy(dx, dy);
         // Move all children with the container
         for (const child of this._children) {
-            child.moveBy(dx, dy);
+            if (child instanceof ContainerElement) {
+                child.moveBy(dx, dy, visited);
+            } else {
+                child.moveBy(dx, dy);
+            }
         }
     }
 
@@ -309,10 +317,13 @@ export abstract class ContainerElement extends DiagramElement {
     // ========================================================================
 
     restoreChildren(allComponents: DiagramElement[]): void {
-        // This is called during deserialization to restore child references
+        // Restore child references, skipping any that would create a cycle
         for (const comp of allComponents) {
-            if (comp.parentId === this.id && !this._children.includes(comp)) {
-                this._children.push(comp);
+            if (comp.parentId === this.id && comp !== this && !this._children.includes(comp)) {
+                // Ensure comp is not an ancestor of this (prevents A→B→A cycles)
+                if (comp.id !== this.parentId) {
+                    this._children.push(comp);
+                }
             }
         }
     }

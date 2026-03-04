@@ -6,6 +6,7 @@
 import {
     Domain,
     Module,
+    System,
     NumberedDot,
     Tag,
     GRID_SIZE,
@@ -54,32 +55,33 @@ function resolveOverlap(element: DiagramElement, siblings: DiagramElement[]): vo
         const dx = elCx - blCx;
         const dy = elCy - blCy;
 
+        let newX = element.x;
+        let newY = element.y;
+
         if (Math.abs(dx) >= Math.abs(dy)) {
             // Horizontal eject
             if (dx >= 0) {
-                // element is to the right → push right
-                element.x = snap(blocker.x + blocker.width + gap);
+                newX = snap(blocker.x + blocker.width + gap);
             } else {
-                // element is to the left → push left
-                element.x = snap(blocker.x - element.width - gap);
+                newX = snap(blocker.x - element.width - gap);
             }
         } else {
             // Vertical eject
             if (dy >= 0) {
-                // element is below → push down
-                element.y = snap(blocker.y + blocker.height + gap);
+                newY = snap(blocker.y + blocker.height + gap);
             } else {
-                // element is above → push up
-                element.y = snap(blocker.y - element.height - gap);
+                newY = snap(blocker.y - element.height - gap);
             }
         }
+
+        element.moveTo(newX, newY);
 
         blocker = overlappingWith(element.x, element.y);
     }
 }
 
 /** Resolve overlaps against siblings within a container. */
-export function resolveOverlapInContainer(element: DiagramElement, container: Module | Domain): void {
+export function resolveOverlapInContainer(element: DiagramElement, container: Module | Domain | System): void {
     resolveOverlap(element, container.children.filter(c => c !== element));
 }
 
@@ -154,11 +156,21 @@ export function createElement(
     addElement(state, component, saveState, saveToStorage, render);
     selectElement(state, component);
 
-    // If dropped inside a container, auto-adopt it
-    const container = state.elements.find(
-        el => (el instanceof Module || el instanceof Domain) && el.containsPoint(posX + component.width / 2, posY + component.height / 2)
-    ) as Module | Domain | undefined;
-    if (container && !(component instanceof Module && container instanceof Module)) {
+    // If dropped inside a container, auto-adopt it (respecting nesting rules)
+    const cx = posX + component.width / 2;
+    const cy = posY + component.height / 2;
+    // Prefer innermost (smallest) matching container
+    const container = state.elements
+        .filter(el => {
+            if (!(el instanceof Module || el instanceof Domain || el instanceof System)) return false;
+            if (!el.containsPoint(cx, cy)) return false;
+            if (component instanceof System) return false;                          // System never adopted
+            if (el instanceof System && !(component instanceof Domain)) return false; // Only Domain→System
+            if (el instanceof Module && (component instanceof Module || component instanceof Domain)) return false;
+            return true;
+        })
+        .sort((a, b) => (a.width * a.height) - (b.width * b.height))[0] as Module | Domain | System | undefined;
+    if (container) {
         container.addChild(component);
     }
 
@@ -198,14 +210,14 @@ export function removeComponent(
     if (index > -1) {
         saveState();
 
-        if (component instanceof Module || component instanceof Domain) {
+        if (component instanceof Module || component instanceof Domain || component instanceof System) {
             for (const child of component.children) {
                 child.parentId = null;
             }
         }
 
         if (component.parentId) {
-            const parent = state.elements.find(c => c.id === component.parentId) as Module | Domain | undefined;
+            const parent = state.elements.find(c => c.id === component.parentId) as Module | Domain | System | undefined;
             if (parent) {
                 parent.removeChild(component);
             }

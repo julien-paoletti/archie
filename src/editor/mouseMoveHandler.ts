@@ -10,6 +10,7 @@ import {
     Module,
     Note,
     NumberedDot,
+    System,
     Tag,
     type ConnectionPoint,
     type DiagramElement
@@ -27,6 +28,7 @@ import {
     findComponentAtPoint,
     findContainerAtPoint,
     findDomainAtPoint,
+    findSystemAtPoint,
     getSortedComponentsForRendering,
     isPointCoveredByHigherComponent,
     projectPointOnBorder
@@ -37,7 +39,8 @@ export function handleMouseMove(
     e: MouseEvent,
     render: () => void,
     findContainerFn: (x: number, y: number, exclude?: DiagramElement) => Module | Domain | null,
-    findDomainFn: (x: number, y: number, exclude?: DiagramElement) => Domain | null
+    findDomainFn: (x: number, y: number, exclude?: DiagramElement) => Domain | null,
+    findSystemFn: (x: number, y: number, exclude?: DiagramElement) => System | null
 ): void {
     const rect = state.canvas.getBoundingClientRect();
     const screenX = e.clientX - rect.left;
@@ -49,7 +52,7 @@ export function handleMouseMove(
     if (isDragOperation(state)) {
         const delta = calculateAutoScrollDelta(state);
         if (delta.x !== 0 || delta.y !== 0) {
-            startAutoScroll(state, render, findContainerFn, findDomainFn);
+            startAutoScroll(state, render, findContainerFn, findDomainFn, findSystemFn);
         } else {
             stopAutoScroll(state);
         }
@@ -328,10 +331,12 @@ export function handleMouseMove(
         const centerX = state.draggedComponent.x + state.draggedComponent.width / 2;
         const centerY = state.draggedComponent.y + state.draggedComponent.height / 2;
 
-        if (state.draggedComponent instanceof Domain) {
+        if (state.draggedComponent instanceof System) {
             state.potentialDropTarget = null;
         } else if (state.draggedComponent instanceof Boundary || state.draggedComponent instanceof Note || state.draggedComponent instanceof NumberedDot || state.draggedComponent instanceof Label || state.draggedComponent instanceof Tag) {
             state.potentialDropTarget = null;
+        } else if (state.draggedComponent instanceof Domain) {
+            state.potentialDropTarget = findSystemAtPoint(state, centerX, centerY, state.draggedComponent);
         } else if (state.draggedComponent instanceof Module) {
             state.potentialDropTarget = findDomainAtPoint(state, centerX, centerY, state.draggedComponent);
         } else {

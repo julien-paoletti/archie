@@ -9,6 +9,7 @@ import {
     Connection,
     Domain,
     Module,
+    System,
     NumberedDot,
     Tag,
     type ConnectionPoint,
@@ -18,13 +19,18 @@ import {
 import type { EditorState, HoverConnectionPoint } from './editorState';
 
 export function findComponentAtPoint(state: EditorState, x: number, y: number): DiagramElement | null {
-    let foundContainer: Module | Domain | null = null;
+    let foundContainer: Module | Domain | System | null = null;
 
     for (let i = state.elements.length - 1; i >= 0; i--) {
         const component = state.elements[i];
         if (component && component.containsPoint(x, y)) {
-            if (component instanceof Module || component instanceof Domain) {
-                if (!foundContainer || (component instanceof Module && foundContainer instanceof Domain)) {
+            if (component instanceof Module || component instanceof Domain || component instanceof System) {
+                // Prefer innermost container: Module > Domain > System
+                if (!foundContainer) {
+                    foundContainer = component;
+                } else if (component instanceof Module && !(foundContainer instanceof Module)) {
+                    foundContainer = component;
+                } else if (component instanceof Domain && foundContainer instanceof System) {
                     foundContainer = component;
                 }
             } else {
@@ -57,6 +63,16 @@ export function findDomainAtPoint(state: EditorState, x: number, y: number, excl
     for (let i = state.elements.length - 1; i >= 0; i--) {
         const component = state.elements[i];
         if (component instanceof Domain && component !== excludeComponent && component.containsPoint(x, y)) {
+            return component;
+        }
+    }
+    return null;
+}
+
+export function findSystemAtPoint(state: EditorState, x: number, y: number, excludeComponent?: DiagramElement): System | null {
+    for (let i = state.elements.length - 1; i >= 0; i--) {
+        const component = state.elements[i];
+        if (component instanceof System && component !== excludeComponent && component.containsPoint(x, y)) {
             return component;
         }
     }
@@ -201,6 +217,7 @@ export function alignSelectedElementsHorizontally(state: EditorState, saveState:
 }
 
 export function getSortedComponentsForRendering(state: EditorState): DiagramElement[] {
+    const systems: DiagramElement[] = [];
     const domains: DiagramElement[] = [];
     const modules: DiagramElement[] = [];
     const others: DiagramElement[] = [];
@@ -212,6 +229,8 @@ export function getSortedComponentsForRendering(state: EditorState): DiagramElem
             numberedDots.push(comp);
         } else if (comp instanceof Boundary) {
             boundaries.push(comp);
+        } else if (comp instanceof System) {
+            systems.push(comp);
         } else if (comp instanceof Domain) {
             domains.push(comp);
         } else if (comp instanceof Module) {
@@ -221,7 +240,7 @@ export function getSortedComponentsForRendering(state: EditorState): DiagramElem
         }
     }
 
-    return [...domains, ...modules, ...others, ...boundaries, ...numberedDots];
+    return [...systems, ...domains, ...modules, ...others, ...boundaries, ...numberedDots];
 }
 
 export function isPointCoveredByHigherComponent(state: EditorState, point: Point, component: DiagramElement): boolean {

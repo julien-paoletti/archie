@@ -282,7 +282,8 @@ export class Editor {
         mouseMove.handleMouseMove(
             this.state, e, () => this.render(),
             (x, y, ex) => selection.findContainerAtPoint(this.state, x, y, ex),
-            (x, y, ex) => selection.findDomainAtPoint(this.state, x, y, ex)
+            (x, y, ex) => selection.findDomainAtPoint(this.state, x, y, ex),
+            (x, y, ex) => selection.findSystemAtPoint(this.state, x, y, ex)
         );
     }
 
@@ -290,7 +291,8 @@ export class Editor {
         viewport.startAutoScroll(
             this.state, () => this.render(),
             (x, y, ex) => selection.findContainerAtPoint(this.state, x, y, ex),
-            (x, y, ex) => selection.findDomainAtPoint(this.state, x, y, ex)
+            (x, y, ex) => selection.findDomainAtPoint(this.state, x, y, ex),
+            (x, y, ex) => selection.findSystemAtPoint(this.state, x, y, ex)
         );
     }
 

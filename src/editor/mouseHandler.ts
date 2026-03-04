@@ -7,6 +7,7 @@ import {
     Connection,
     Domain,
     Module,
+    System,
     type DiagramElement
 } from '../canvas/index';
 import { isDragOperation, type EditorState } from './editorState';
@@ -172,7 +173,7 @@ export function handleMouseDown(state: EditorState, e: MouseEvent, callbacks: Mo
             clone.moveTo(element.x, element.y);
             state.elements.push(clone);
 
-            if (element instanceof Module || element instanceof Domain) {
+            if (element instanceof Module || element instanceof Domain || element instanceof System) {
                 for (const child of element.children) {
                     const childClone = child.clone();
                     childClone.moveTo(child.x, child.y);

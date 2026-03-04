@@ -3,7 +3,7 @@
  * Manages zoom, pan, auto-scroll, and world sizing
  */
 
-import { Domain, Module, NumberedDot, Tag, type DiagramElement, type Point } from '../canvas/index';
+import { Domain, Module, System, NumberedDot, Tag, type DiagramElement, type Point } from '../canvas/index';
 import {
     type EditorState,
     EDGE_THRESHOLD,
@@ -158,7 +158,8 @@ export function startAutoScroll(
     state: EditorState,
     render: () => void,
     findContainerAtPoint: (x: number, y: number, exclude?: DiagramElement) => Module | Domain | null,
-    findDomainAtPoint: (x: number, y: number, exclude?: DiagramElement) => Domain | null
+    findDomainAtPoint: (x: number, y: number, exclude?: DiagramElement) => Domain | null,
+    findSystemAtPoint: (x: number, y: number, exclude?: DiagramElement) => System | null
 ): void {
     if (state.autoScrollAnimationId !== null) return;
 
@@ -205,8 +206,10 @@ export function startAutoScroll(
                 const centerX = state.draggedComponent.x + state.draggedComponent.width / 2;
                 const centerY = state.draggedComponent.y + state.draggedComponent.height / 2;
 
-                if (state.draggedComponent instanceof Domain) {
+                if (state.draggedComponent instanceof System) {
                     state.potentialDropTarget = null;
+                } else if (state.draggedComponent instanceof Domain) {
+                    state.potentialDropTarget = findSystemAtPoint(centerX, centerY, state.draggedComponent);
                 } else if (state.draggedComponent instanceof Module) {
                     state.potentialDropTarget = findDomainAtPoint(centerX, centerY, state.draggedComponent);
                 } else {

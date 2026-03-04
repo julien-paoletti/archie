@@ -7,10 +7,12 @@ import {
     Component,
     Module,
     Domain,
+    System,
     Boundary,
     User,
     DOMAIN_TITLE_HEIGHT,
     MODULE_TITLE_HEIGHT,
+    SYSTEM_TITLE_HEIGHT,
     type DiagramElement
 } from '../canvas/index';
 import type { EditCallbacks } from './editUtils';
@@ -42,7 +44,7 @@ export function startTitleEdit(state: TitleEditState, component: DiagramElement,
     const scaledHeight = component.height * scale;
     const scaledFontSize = Math.max(10, Math.round(14 * scale));
 
-    const isContainer = component instanceof Module || component instanceof Domain;
+    const isContainer = component instanceof Module || component instanceof Domain || component instanceof System;
     const isBoundary = component instanceof Boundary;
     const isUser = component instanceof User;
 
@@ -66,7 +68,7 @@ export function startTitleEdit(state: TitleEditState, component: DiagramElement,
         input.style.fontWeight = '600';
         input.style.fontSize = `${Math.max(10, Math.round(12 * scale))}px`;
     } else if (isContainer) {
-        const titleHeight = component instanceof Domain ? DOMAIN_TITLE_HEIGHT : MODULE_TITLE_HEIGHT;
+        const titleHeight = component instanceof System ? SYSTEM_TITLE_HEIGHT : component instanceof Domain ? DOMAIN_TITLE_HEIGHT : MODULE_TITLE_HEIGHT;
         input.style.left = `${canvasRect.left + screenPos.x}px`;
         input.style.top = `${canvasRect.top + screenPos.y + (titleHeight / 2 - 14) * scale}px`;
         input.style.width = `${scaledWidth}px`;
@@ -149,7 +151,7 @@ export function updateTitlePosition(state: TitleEditState, callbacks: EditCallba
         state.titleInput.style.left = `${canvasRect.left + centerX - inputWidth / 2}px`;
         state.titleInput.style.top = `${canvasRect.top + titleY - 14 * scale}px`;
     } else if (isContainer) {
-        const titleHeight = comp instanceof Domain ? DOMAIN_TITLE_HEIGHT : MODULE_TITLE_HEIGHT;
+        const titleHeight = comp instanceof System ? SYSTEM_TITLE_HEIGHT : comp instanceof Domain ? DOMAIN_TITLE_HEIGHT : MODULE_TITLE_HEIGHT;
         state.titleInput.style.left = `${canvasRect.left + screenPos.x}px`;
         state.titleInput.style.top = `${canvasRect.top + screenPos.y + (titleHeight / 2 - 14) * scale}px`;
         state.titleInput.style.width = `${scaledWidth}px`;

@@ -11,6 +11,7 @@ import {
     Module,
     Note,
     NumberedDot,
+    System,
     Tag,
     type ConnectionPoint,
     type DiagramElement
@@ -195,22 +196,30 @@ function completeConnection(state: EditorState, callbacks: MouseUpCallbacks): bo
     return changed;
 }
 
+function canDropInto(comp: DiagramElement, target: Module | Domain | System): boolean {
+    if (comp === target) return false;
+    if (comp instanceof System) return false;        // System is always top-level
+    if (comp instanceof Boundary) return false;
+    if (comp instanceof Note) return false;
+    if (comp instanceof NumberedDot) return false;
+    if (comp instanceof Label) return false;
+    if (comp instanceof Tag) return false;
+    if (target instanceof System && !(comp instanceof Domain)) return false;  // Only Domains go into System
+    if (target instanceof Module && comp instanceof Module) return false;     // No nested Modules
+    if (target instanceof Module && comp instanceof Domain) return false;     // No Domain inside Module
+    return true;
+}
+
 function handleDragEnd(state: EditorState): void {
-    if (state.potentialDropTarget && state.draggedComponent && !(state.draggedComponent instanceof Domain)) {
+    if (state.potentialDropTarget && state.draggedComponent && canDropInto(state.draggedComponent, state.potentialDropTarget)) {
         const targetContainer = state.potentialDropTarget;
         const componentsToAdd: DiagramElement[] = [];
 
         if (state.selectedElements.length > 1 && state.selectedElements.includes(state.draggedComponent)) {
             for (const comp of state.selectedElements) {
-                if (comp instanceof Domain) continue;
-                if (comp instanceof Boundary) continue;
-                if (comp instanceof Note) continue;
-                if (comp instanceof NumberedDot) continue;
-                if (comp instanceof Label) continue;
-                if (comp instanceof Tag) continue;
-                if (comp === targetContainer) continue;
-                if (targetContainer instanceof Module && comp instanceof Module) continue;
-                componentsToAdd.push(comp);
+                if (canDropInto(comp, targetContainer)) {
+                    componentsToAdd.push(comp);
+                }
             }
         } else {
             componentsToAdd.push(state.draggedComponent);
@@ -219,7 +228,7 @@ function handleDragEnd(state: EditorState): void {
         for (const comp of componentsToAdd) {
             const isNewToContainer = comp.parentId !== targetContainer.id;
             if (comp.parentId && comp.parentId !== targetContainer.id) {
-                const currentParent = state.elements.find(c => c.id === comp.parentId) as Module | Domain | undefined;
+                const currentParent = state.elements.find(c => c.id === comp.parentId) as Module | Domain | System | undefined;
                 if (currentParent) currentParent.removeChild(comp);
             }
             if (isNewToContainer) targetContainer.addChild(comp);
@@ -234,7 +243,7 @@ function handleDragEnd(state: EditorState): void {
 
         for (const comp of componentsToCheck) {
             if (comp.parentId) {
-                const parent = state.elements.find(c => c.id === comp.parentId) as Module | Domain | undefined;
+                const parent = state.elements.find(c => c.id === comp.parentId) as Module | Domain | System | undefined;
                 if (parent) {
                     const centerX = comp.x + comp.width / 2;
                     const centerY = comp.y + comp.height / 2;
@@ -248,7 +257,7 @@ function handleDragEnd(state: EditorState): void {
 
         // Recalculate bounds for any containers whose children moved
         for (const el of state.elements) {
-            if ((el instanceof Module || el instanceof Domain) && el.children.length > 0) {
+            if ((el instanceof Module || el instanceof Domain || el instanceof System) && el.children.length > 0) {
                 el.recalculateBounds();
             }
         }

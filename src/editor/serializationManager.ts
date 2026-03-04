@@ -9,6 +9,7 @@ import {
     Connection,
     Module,
     Domain,
+    System,
     Note,
     NumberedDot,
     Label,
@@ -105,7 +106,7 @@ export class SerializationManager {
                 if (c instanceof Boundary && c.labelPosition !== 'top-left') {
                     base.labelPosition = c.labelPosition;
                 }
-                if ((c instanceof Component || c instanceof User || c instanceof Module || c instanceof Domain || c instanceof Boundary) && c.borderColor) {
+                if ((c instanceof Component || c instanceof User || c instanceof Module || c instanceof Domain || c instanceof System || c instanceof Boundary) && c.borderColor) {
                     base.borderColor = c.borderColor;
                 }
                 return base;
@@ -138,7 +139,7 @@ export class SerializationManager {
         }
 
         for (const comp of this.state.elements) {
-            if (comp instanceof Module || comp instanceof Domain) {
+            if (comp instanceof Module || comp instanceof Domain || comp instanceof System) {
                 comp.restoreChildren(this.state.elements);
             }
         }
@@ -196,10 +197,12 @@ export class SerializationManager {
                         });
                     }
                     if (data.connections && data.connections.length > 0) {
-                        // Deduplicate connections by ID (fixes corrupted localStorage from earlier bug)
+                        const componentIds = new Set(this.state.elements.map(c => c.id));
                         const seen = new Set<string>();
                         for (const connData of data.connections) {
-                            if (!seen.has(connData.id)) {
+                            if (!seen.has(connData.id) &&
+                                componentIds.has(connData.sourcePoint.componentId) &&
+                                componentIds.has(connData.targetPoint.componentId)) {
                                 seen.add(connData.id);
                                 this.state.connections.push(new Connection(connData as any));
                             }
@@ -210,7 +213,7 @@ export class SerializationManager {
 
                 // Restore parent-child relationships
                 for (const comp of this.state.elements) {
-                    if (comp instanceof Module || comp instanceof Domain) {
+                    if (comp instanceof Module || comp instanceof Domain || comp instanceof System) {
                         comp.restoreChildren(this.state.elements);
                     }
                 }
@@ -293,7 +296,7 @@ export class SerializationManager {
 
         // Restore parent-child relationships
         for (const comp of this.state.elements) {
-            if (comp instanceof Module || comp instanceof Domain) {
+            if (comp instanceof Module || comp instanceof Domain || comp instanceof System) {
                 comp.restoreChildren(this.state.elements);
             }
         }

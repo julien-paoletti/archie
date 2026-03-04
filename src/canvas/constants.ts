@@ -25,6 +25,12 @@ export const DOMAIN_TITLE_HEIGHT = 36;
 export const DOMAIN_MIN_WIDTH = 250;
 export const DOMAIN_MIN_HEIGHT = 150;
 
+// System constants
+export const SYSTEM_PADDING = 36;
+export const SYSTEM_TITLE_HEIGHT = 44;
+export const SYSTEM_MIN_WIDTH = 400;
+export const SYSTEM_MIN_HEIGHT = 250;
+
 // --- Color palettes ---
 
 /** 12-color palette used for element borders and connection strokes */
@@ -81,6 +87,7 @@ export const MINIMAP_VIEWPORT_STROKE = 'rgba(59, 130, 246, 0.6)';
 
 /** Fill colors used to represent each element type in the minimap */
 export const MINIMAP_ELEMENT_COLORS = {
+    system: '#F1F5F9',
     domain: '#DBEAFE',
     module: '#CCFBF1',
     user: '#EDE9FE',
