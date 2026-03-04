@@ -5,6 +5,7 @@
 
 import {
     Connection,
+    ContainerElement,
     Domain,
     Module,
     System,
@@ -25,6 +26,22 @@ import { handleMouseUp, type MouseUpCallbacks } from './mouseUpHandler';
 
 export type MouseHandlerCallbacks = MouseUpCallbacks;
 export { handleMouseUp } from './mouseUpHandler';
+
+/** Recursively clone an element and all its descendants, pushing every clone into state.elements. */
+function cloneDeep(element: DiagramElement, elements: DiagramElement[]): DiagramElement {
+    const clone = element.clone();
+    clone.moveTo(element.x, element.y);
+    elements.push(clone);
+
+    if (element instanceof ContainerElement) {
+        for (const child of element.children) {
+            const childClone = cloneDeep(child, elements);
+            (clone as ContainerElement).addChild(childClone);
+        }
+    }
+
+    return clone;
+}
 
 export function handleMouseDown(state: EditorState, e: MouseEvent, callbacks: MouseHandlerCallbacks): void {
     const rect = state.canvas.getBoundingClientRect();
@@ -169,19 +186,7 @@ export function handleMouseDown(state: EditorState, e: MouseEvent, callbacks: Mo
 
         // Ctrl+drag to clone
         if (e.ctrlKey) {
-            const clone = element.clone();
-            clone.moveTo(element.x, element.y);
-            state.elements.push(clone);
-
-            if (element instanceof Module || element instanceof Domain || element instanceof System) {
-                for (const child of element.children) {
-                    const childClone = child.clone();
-                    childClone.moveTo(child.x, child.y);
-                    state.elements.push(childClone);
-                    clone.addChild(childClone);
-                }
-            }
-
+            const clone = cloneDeep(element, state.elements);
             state.draggedComponent = clone;
             selectElement(state, clone);
             state.isCloneDrag = true;
