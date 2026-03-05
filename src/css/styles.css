@@ -214,6 +214,21 @@ body {
     pointer-events: none;
 }
 
+.palette-tooltip {
+    position: fixed;
+    background: #1e293b;
+    color: #f8fafc;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    padding: 6px 10px;
+    border-radius: 6px;
+    white-space: pre-line;
+    width: 180px;
+    pointer-events: none;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
 .editor-container {
     flex: 1;
     position: relative;

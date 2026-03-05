@@ -6,6 +6,23 @@
 import { elementRegistry, preloadIcons, type ElementConstructor } from './canvas/index.ts';
 
 // ============================================================================
+// Tooltip descriptions for each element type
+// ============================================================================
+
+const ELEMENT_TOOLTIPS: Record<string, { name: string; desc: string }> = {
+    component:   { name: 'Component',     desc: 'A service, application, or tech unit inside a module.' },
+    module:      { name: 'Module',        desc: 'Groups related components. Contained in a domain.' },
+    domain:      { name: 'Domain',        desc: 'A business capability area. Groups modules.' },
+    system:      { name: 'System',        desc: 'Top-level boundary grouping one or more domains.' },
+    boundary:    { name: 'Boundary',      desc: 'Annotates a group of elements with a dashed border.' },
+    user:        { name: 'User',          desc: 'A human actor or stakeholder in the architecture.' },
+    note:        { name: 'Note',          desc: 'A free-text annotation or explanation.' },
+    numberedDot: { name: 'Numbered Dot',  desc: 'A callout marker for step-by-step flows.' },
+    label:       { name: 'Label',         desc: 'Plain text with no background or border.' },
+    tag:         { name: 'Tag',           desc: 'A small colored label for quick categorisation.' },
+};
+
+// ============================================================================
 // Types
 // ============================================================================
 
@@ -26,6 +43,8 @@ export class Palette {
     private container: HTMLElement;
     private onDragStart: (ElementClass: ElementConstructor) => void;
     private items: HTMLElement[];
+    private tooltipEl: HTMLDivElement;
+    private tooltipTimeout: ReturnType<typeof setTimeout> | null = null;
 
     constructor(containerId: string, options: PaletteOptions = {}) {
         const container = document.getElementById(containerId);
@@ -35,6 +54,12 @@ export class Palette {
         this.container = container;
         this.onDragStart = options.onDragStart ?? (() => { });
         this.items = [];
+
+        this.tooltipEl = document.createElement('div');
+        this.tooltipEl.className = 'palette-tooltip';
+        this.tooltipEl.style.display = 'none';
+        document.body.appendChild(this.tooltipEl);
+
         this.init();
     }
 
@@ -62,6 +87,29 @@ export class Palette {
         item.className = 'palette-item';
         item.dataset.componentType = ElementClass.type;
         item.draggable = true;
+
+        const tooltipData = ELEMENT_TOOLTIPS[ElementClass.type];
+
+        if (tooltipData) {
+            item.addEventListener('mouseenter', () => {
+                if (this.tooltipTimeout) clearTimeout(this.tooltipTimeout);
+                this.tooltipTimeout = setTimeout(() => {
+                    const rect = item.getBoundingClientRect();
+                    this.tooltipEl.innerHTML = `<strong>${tooltipData.name}</strong><br>${tooltipData.desc}`;
+                    this.tooltipEl.style.display = 'block';
+                    this.tooltipEl.style.left = `${rect.right + 8}px`;
+                    this.tooltipEl.style.top = `${rect.top + rect.height / 2 - this.tooltipEl.offsetHeight / 2}px`;
+                }, 400);
+            });
+            item.addEventListener('mouseleave', () => {
+                if (this.tooltipTimeout) { clearTimeout(this.tooltipTimeout); this.tooltipTimeout = null; }
+                this.tooltipEl.style.display = 'none';
+            });
+            item.addEventListener('dragstart', () => {
+                if (this.tooltipTimeout) { clearTimeout(this.tooltipTimeout); this.tooltipTimeout = null; }
+                this.tooltipEl.style.display = 'none';
+            });
+        }
 
         // Create preview canvas
         const canvas = document.createElement('canvas');
