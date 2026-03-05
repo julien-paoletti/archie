@@ -116,8 +116,3 @@ bun run build   # Production build to docs/
 ```
 
 ## Backlog
-
-Uncaught RangeError: Maximum call stack size exceeded
-    at h.moveBy (app.js:1:4462)
-
-the user element is no more resizable

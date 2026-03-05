@@ -7,7 +7,7 @@
 import { DiagramElement } from './diagramElement';
 import { ShapeDrawer } from './shape-drawer';
 import { iconCache, TABLER_ICONS } from './iconCache';
-import { HANDLE_SIZE, CONNECTION_POINT_HITBOX } from './constants';
+import { CONNECTION_POINT_HITBOX } from './constants';
 import type { DiagramElementOptions, ColorStop, ShadowOptions, Point, ResizeHandle } from './types';
 
 export interface UserOptions extends DiagramElementOptions {
@@ -326,61 +326,9 @@ export class User extends DiagramElement {
         }
 
         ctx.restore();
-
-        // Draw resize handles when selected
-        this.drawCircleResizeHandles(ctx);
     }
 
-    /**
-     * Draw resize handles at cardinal points for circular shape
-     */
-    private drawCircleResizeHandles(ctx: CanvasRenderingContext2D): void {
-        if (!this.selected) return;
-
-        const size = HANDLE_SIZE;
-        const half = size / 2;
-        const center = this.getCenter();
-        const radius = this.getRadius();
-
-        ctx.save();
-        ctx.fillStyle = '#ffffff';
-        ctx.strokeStyle = '#4f46e5';
-        ctx.lineWidth = 2;
-
-        // Four cardinal handles
-        const handles: Point[] = [
-            { x: center.x, y: center.y - radius },      // top
-            { x: center.x + radius, y: center.y },      // right
-            { x: center.x, y: center.y + radius },      // bottom
-            { x: center.x - radius, y: center.y }       // left
-        ];
-
-        handles.forEach(handle => {
-            ctx.beginPath();
-            ctx.rect(handle.x - half, handle.y - half, size, size);
-            ctx.fill();
-            ctx.stroke();
-        });
-
-        ctx.restore();
-    }
-
-    /**
-     * Override getResizeHandleAtPoint for circular handles
-     */
-    override getResizeHandleAtPoint(px: number, py: number): ResizeHandle {
-        if (!this.selected) return null;
-
-        const hitbox = 8;
-        const center = this.getCenter();
-        const radius = this.getRadius();
-
-        // Check cardinal points
-        if (Math.abs(px - center.x) <= hitbox && Math.abs(py - (center.y - radius)) <= hitbox) return 'top';
-        if (Math.abs(px - (center.x + radius)) <= hitbox && Math.abs(py - center.y) <= hitbox) return 'right';
-        if (Math.abs(px - center.x) <= hitbox && Math.abs(py - (center.y + radius)) <= hitbox) return 'bottom';
-        if (Math.abs(px - (center.x - radius)) <= hitbox && Math.abs(py - center.y) <= hitbox) return 'left';
-
+    override getResizeHandleAtPoint(_px: number, _py: number): ResizeHandle {
         return null;
     }
 
