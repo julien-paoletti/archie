@@ -20,6 +20,53 @@ import {
 } from '../canvas/index';
 import type { SerializedComponent, SerializedConnection, SerializedDiagram } from './editorTypes';
 
+// ============================================================================
+// Deserialization safety
+// ============================================================================
+
+const DANGEROUS_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+
+/** Recursively strip prototype-polluting keys from an object. */
+function sanitize<T>(obj: T): T {
+    if (obj === null || typeof obj !== 'object') return obj;
+    if (Array.isArray(obj)) return obj.map(sanitize) as T;
+    const clean: Record<string, unknown> = {};
+    for (const key of Object.keys(obj as Record<string, unknown>)) {
+        if (!DANGEROUS_KEYS.has(key)) {
+            clean[key] = sanitize((obj as Record<string, unknown>)[key]);
+        }
+    }
+    return clean as T;
+}
+
+/** Validate the basic shape of a deserialized diagram. Returns null if invalid. */
+function validateDiagram(data: unknown): SerializedDiagram | SerializedComponent[] | null {
+    if (data === null || typeof data !== 'object') return null;
+
+    if (Array.isArray(data)) {
+        // Legacy format: array of components
+        for (const item of data) {
+            if (!isValidComponent(item)) return null;
+        }
+        return sanitize(data as SerializedComponent[]);
+    }
+
+    const d = data as Record<string, unknown>;
+    if (!Array.isArray(d.components)) return null;
+    for (const item of d.components) {
+        if (!isValidComponent(item)) return null;
+    }
+    if (d.connections !== undefined && !Array.isArray(d.connections)) return null;
+    return sanitize(data as SerializedDiagram);
+}
+
+function isValidComponent(item: unknown): boolean {
+    if (item === null || typeof item !== 'object') return false;
+    const c = item as Record<string, unknown>;
+    return typeof c.type === 'string' && typeof c.id === 'string' &&
+        typeof c.x === 'number' && typeof c.y === 'number';
+}
+
 export interface SerializationState {
     elements: DiagramElement[];
     connections: Connection[];
@@ -115,7 +162,13 @@ export class SerializationManager {
         };
     }
 
-    fromJSON(data: SerializedDiagram | SerializedComponent[]): void {
+    fromJSON(rawData: unknown): void {
+        const data = validateDiagram(rawData);
+        if (!data) {
+            console.warn('Invalid diagram data — skipping load');
+            return;
+        }
+
         // Clear arrays in-place (preserves shared references)
         this.state.elements.length = 0;
         this.state.connections.length = 0;
@@ -178,7 +231,12 @@ export class SerializationManager {
         try {
             const stored = localStorage.getItem(this.storageKey);
             if (stored) {
-                const data = JSON.parse(stored) as SerializedDiagram | SerializedComponent[];
+                const raw = JSON.parse(stored);
+                const data = validateDiagram(raw);
+                if (!data) {
+                    console.warn('Invalid diagram in localStorage — skipping');
+                    return;
+                }
                 this.autoSaveEnabled = false;
 
                 if (Array.isArray(data)) {

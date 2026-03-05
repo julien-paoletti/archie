@@ -236,3 +236,59 @@ export function removeComponent(
         saveToStorage();
     }
 }
+
+/**
+ * Groups all currently selected elements into a new Module.
+ * The module is sized to wrap all selected elements with padding.
+ */
+export function groupIntoModule(
+    state: EditorState,
+    saveState: () => void,
+    saveToStorage: () => void,
+    render: () => void
+): void {
+    const targets = state.selectedElements;
+    if (targets.length < 2) return;
+
+    saveState();
+
+    const snap = (v: number) => Math.round(v / GRID_SIZE) * GRID_SIZE;
+    const PADDING = 24;
+
+    // Compute bounding box of all selected elements
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (const el of targets) {
+        minX = Math.min(minX, el.x);
+        minY = Math.min(minY, el.y);
+        maxX = Math.max(maxX, el.x + el.width);
+        maxY = Math.max(maxY, el.y + el.height);
+    }
+
+    const moduleX = snap(minX - PADDING);
+    const moduleY = snap(minY - PADDING);
+    const moduleW = snap(maxX - minX + PADDING * 2);
+    const moduleH = snap(maxY - minY + PADDING * 2);
+
+    const module = new Module({ title: 'Module', x: moduleX, y: moduleY, width: moduleW, height: moduleH });
+
+    // Detach targets from any existing parent, then adopt into new module
+    for (const el of targets) {
+        if (el.parentId) {
+            const oldParent = state.elements.find(c => c.id === el.parentId) as Module | Domain | System | undefined;
+            if (oldParent) oldParent.removeChild(el);
+        }
+        module.addChild(el);
+    }
+
+    state.elements.push(module);
+    module.recalculateBounds();
+    updateWorldSize(state);
+
+    // Deselect the grouped elements and select the new module
+    for (const el of targets) el.selected = false;
+    module.selected = true;
+    state.selectedElements = [module];
+
+    saveToStorage();
+    render();
+}

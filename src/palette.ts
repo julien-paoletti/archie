@@ -95,7 +95,12 @@ export class Palette {
                 if (this.tooltipTimeout) clearTimeout(this.tooltipTimeout);
                 this.tooltipTimeout = setTimeout(() => {
                     const rect = item.getBoundingClientRect();
-                    this.tooltipEl.innerHTML = `<strong>${tooltipData.name}</strong><br>${tooltipData.desc}`;
+                    this.tooltipEl.textContent = '';
+                    const strong = document.createElement('strong');
+                    strong.textContent = tooltipData.name;
+                    this.tooltipEl.appendChild(strong);
+                    this.tooltipEl.appendChild(document.createElement('br'));
+                    this.tooltipEl.append(tooltipData.desc);
                     this.tooltipEl.style.display = 'block';
                     this.tooltipEl.style.left = `${rect.right + 8}px`;
                     this.tooltipEl.style.top = `${rect.top + rect.height / 2 - this.tooltipEl.offsetHeight / 2}px`;

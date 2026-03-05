@@ -107,10 +107,7 @@ class ArchieApp {
                 const activeElement = document.activeElement;
                 if (activeElement && !['INPUT', 'TEXTAREA'].includes(activeElement.tagName)) {
                     if (selectedComponents.length > 0) {
-                        // Remove all selected components
-                        for (const component of selectedComponents) {
-                            this.editor?.removeComponent(component);
-                        }
+                        this.editor?.removeComponents(selectedComponents);
                         e.preventDefault();
                     } else if (selectedConnection) {
                         this.editor?.removeConnection(selectedConnection);

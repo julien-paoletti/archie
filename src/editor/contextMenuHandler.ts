@@ -42,6 +42,7 @@ export interface ContextMenuCallbacks {
     changeBoundaryLabelPosition: (element: Boundary, position: string) => void;
     alignSelectedVertically: () => void;
     alignSelectedHorizontally: () => void;
+    groupSelectedIntoModule: () => void;
     getSelectedElements: () => DiagramElement[];
     removeElement: (element: DiagramElement) => void;
 }
@@ -343,10 +344,15 @@ export class ContextMenuHandler {
             });
         }
 
-        // Alignment options when multiple elements are selected
+        // Alignment and grouping options when multiple elements are selected
         const selectedElements = this.callbacks.getSelectedElements();
         if (selectedElements.length > 1 && selectedElements.includes(element)) {
             items.push({ separator: true });
+            items.push({
+                icon: 'object-scan',
+                label: 'Group into Module',
+                action: () => this.callbacks.groupSelectedIntoModule()
+            });
             items.push({
                 icon: 'align-center-horizontal',
                 label: 'Align Center Horizontally',
@@ -399,10 +405,12 @@ export class ContextMenuHandler {
                 if (item.danger) classes.push('danger');
                 if (item.disabled) classes.push('disabled');
                 menuItem.className = classes.join(' ');
-                menuItem.innerHTML = `
-                    <i class="ti ti-${item.icon}"></i>
-                    <span>${item.label}</span>
-                `;
+                const iconEl = document.createElement('i');
+                iconEl.className = `ti ti-${item.icon}`;
+                const labelEl = document.createElement('span');
+                labelEl.textContent = item.label ?? '';
+                menuItem.appendChild(iconEl);
+                menuItem.appendChild(labelEl);
                 if (!item.disabled) {
                     menuItem.addEventListener('click', () => {
                         if (item.action) {

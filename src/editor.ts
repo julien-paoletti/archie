@@ -199,6 +199,7 @@ export class Editor {
             },
             alignSelectedVertically: () => selection.alignSelectedElementsVertically(this.state, () => this.saveState(), () => this.saveToStorage(), () => this.render()),
             alignSelectedHorizontally: () => selection.alignSelectedElementsHorizontally(this.state, () => this.saveState(), () => this.saveToStorage(), () => this.render()),
+            groupSelectedIntoModule: () => dragDrop.groupIntoModule(this.state, () => this.saveState(), () => this.saveToStorage(), () => this.render()),
             getSelectedElements: () => this.state.selectedElements,
             removeElement: (el) => dragDrop.removeComponent(this.state, el, () => this.saveState(), () => this.saveToStorage(), () => this.render())
         });
@@ -359,6 +360,15 @@ export class Editor {
     }
     removeComponent(component: DiagramElement): void {
         dragDrop.removeComponent(this.state, component, () => this.saveState(), () => this.saveToStorage(), () => this.render());
+    }
+    removeComponents(components: DiagramElement[]): void {
+        if (components.length === 0) return;
+        this.saveState();
+        for (const component of components) {
+            dragDrop.removeComponent(this.state, component, () => {}, () => {}, () => {});
+        }
+        this.saveToStorage();
+        this.render();
     }
 
     clearSelection(): void { selection.clearSelection(this.state); }
