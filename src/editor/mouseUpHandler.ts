@@ -216,8 +216,11 @@ function handleDragEnd(state: EditorState): void {
         const componentsToAdd: DiagramElement[] = [];
 
         if (state.selectedElements.length > 1 && state.selectedElements.includes(state.draggedComponent)) {
+            const selectedIds = new Set(state.selectedElements.map(e => e.id));
             for (const comp of state.selectedElements) {
                 if (canDropInto(comp, targetContainer)) {
+                    // Skip elements whose parent is also being moved — they'll follow their parent
+                    if (comp.parentId && selectedIds.has(comp.parentId)) continue;
                     componentsToAdd.push(comp);
                 }
             }

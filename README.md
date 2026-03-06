@@ -116,3 +116,5 @@ bun run build   # Production build to docs/
 ```
 
 ## Backlog
+
+- [ ] add icons for all menu item in the contextual menu
