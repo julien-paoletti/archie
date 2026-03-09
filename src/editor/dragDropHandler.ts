@@ -4,8 +4,11 @@
  */
 
 import {
+    Boundary,
     Domain,
+    Label,
     Module,
+    Note,
     System,
     NumberedDot,
     Tag,
@@ -19,6 +22,11 @@ import { getMousePosition } from './viewportHandler';
 import { selectElement } from './selectionHandler';
 import { updateWorldSize } from './viewportHandler';
 
+/** Returns true for annotation/overlay elements that should never be ejected or block others. */
+function isOverlayElement(el: DiagramElement): boolean {
+    return el instanceof Boundary || el instanceof Note || el instanceof Label || el instanceof Tag;
+}
+
 /**
  * Core overlap resolution. Ejects `element` in the direction it is most
  * displaced from the blocking sibling (right / left / down / up), then
@@ -26,10 +34,12 @@ import { updateWorldSize } from './viewportHandler';
  * Call recalculateBounds() on containers afterwards.
  */
 function resolveOverlap(element: DiagramElement, siblings: DiagramElement[]): void {
+    if (isOverlayElement(element)) return;
     if (siblings.length === 0) return;
 
     const overlappingWith = (ax: number, ay: number): DiagramElement | null => {
         for (const s of siblings) {
+            if (isOverlayElement(s)) continue;
             if (
                 ax < s.x + s.width &&
                 ax + element.width > s.x &&
