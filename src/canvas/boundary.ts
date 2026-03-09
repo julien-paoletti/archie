@@ -133,6 +133,13 @@ export class Boundary extends DiagramElement {
     }
 
     /**
+     * Boundaries have no connection points — they are purely visual annotations.
+     */
+    override getNearestBorderPoint(): null {
+        return null;
+    }
+
+    /**
      * Override containsPoint to only detect clicks on the border, not the interior.
      * This allows clicking on elements that are visually inside the boundary.
      */
