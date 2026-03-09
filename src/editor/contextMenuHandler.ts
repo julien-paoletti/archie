@@ -134,12 +134,12 @@ export class ContextMenuHandler {
     private buildConnectionMenu(connection: Connection): void {
         const items: ContextMenuItem[] = [
             {
-                icon: 'type',
+                icon: 'square-letter-t',
                 label: 'Edit Label',
                 action: () => this.callbacks.startConnectionLabelEdit(connection)
             },
             {
-                icon: 'plus-circle',
+                icon: 'circle-plus',
                 label: 'Add Control Point',
                 action: () => {
                     if (this.state.clickPos) {
@@ -159,7 +159,7 @@ export class ContextMenuHandler {
         }
 
         items.push({
-            icon: 'refresh-cw',
+            icon: 'refresh',
             label: 'Reset Curve',
             action: () => this.callbacks.resetConnectionCurve(connection)
         });
@@ -233,7 +233,7 @@ export class ContextMenuHandler {
         items.push(
             { separator: true },
             {
-                icon: 'trash-2',
+                icon: 'trash-x',
                 label: 'Delete',
                 action: () => this.callbacks.removeConnection(connection),
                 danger: true
@@ -248,7 +248,7 @@ export class ContextMenuHandler {
 
         // Edit title option (for all elements)
         items.push({
-            icon: 'type',
+            icon: 'square-letter-t',
             label: 'Edit Title',
             action: () => this.callbacks.startTitleEdit(element)
         });
@@ -257,7 +257,7 @@ export class ContextMenuHandler {
         if (element instanceof Component) {
             const hasDescription = element.description && element.description.length > 0;
             items.push({
-                icon: hasDescription ? 'edit-3' : 'plus-circle',
+                icon: hasDescription ? 'notes' : 'notes',
                 label: hasDescription ? 'Edit Description' : 'Add Description',
                 action: () => this.callbacks.startDescriptionEdit(element)
             });
@@ -368,7 +368,7 @@ export class ContextMenuHandler {
         // Delete option
         items.push({ separator: true });
         items.push({
-            icon: 'trash-2',
+            icon: 'trash-x',
             label: 'Delete',
             action: () => this.callbacks.removeElement(element),
             danger: true
