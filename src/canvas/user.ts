@@ -197,32 +197,14 @@ export class User extends DiagramElement {
     }
 
     /**
-     * Override getPointOnBorder for circular shape
+     * Override getPointOnBorder for circular shape.
+     * offset encodes the full-circle angle as (angle + PI) / (2 * PI),
+     * so we decode it directly and ignore side.
      */
-    override getPointOnBorder(side: 'top' | 'right' | 'bottom' | 'left', offset: number): Point {
+    override getPointOnBorder(_side: 'top' | 'right' | 'bottom' | 'left', offset: number): Point {
         const center = this.getCenter();
         const radius = this.getRadius();
-
-        // Convert side and offset to angle
-        let baseAngle: number;
-        switch (side) {
-            case 'right':
-                baseAngle = 0;
-                break;
-            case 'bottom':
-                baseAngle = Math.PI / 2;
-                break;
-            case 'left':
-                baseAngle = Math.PI;
-                break;
-            case 'top':
-                baseAngle = -Math.PI / 2;
-                break;
-        }
-
-        // Offset adjusts within the quadrant (simplified for circle)
-        const angle = baseAngle + (offset - 0.5) * (Math.PI / 2);
-
+        const angle = offset * 2 * Math.PI - Math.PI;
         return {
             x: center.x + radius * Math.cos(angle),
             y: center.y + radius * Math.sin(angle)

@@ -15,6 +15,7 @@ import {
 } from './canvas/index';
 
 import type { EditorOptions, SerializedComponent, SerializedDiagram } from './editor/editorTypes';
+import type { ClipboardData } from './editor/clipboardHandler';
 import type { EditorState } from './editor/editorState';
 
 import { ContextMenuHandler } from './editor/contextMenuHandler';
@@ -40,7 +41,7 @@ export class Editor {
     private contextMenuHandler: ContextMenuHandler;
     private inlineEditController: InlineEditController;
     private serializationManager: SerializationManager;
-    private clipboardData: SerializedComponent[] = [];
+    private clipboardData: ClipboardData = { elements: [], connections: [] };
 
     constructor(canvasId: string, options: EditorOptions = {}) {
         const canvas = document.getElementById(canvasId) as HTMLCanvasElement | null;
@@ -418,6 +419,6 @@ export class Editor {
         return true;
     }
     paste(): boolean { return clipboard.paste(this.state, this.clipboardData, () => this.saveState(), () => this.saveToStorage(), () => this.render()); }
-    canPaste(): boolean { return this.clipboardData.length > 0; }
+    canPaste(): boolean { return this.clipboardData.elements.length > 0; }
     exportPNG(): void { clipboard.exportPNG(this.state); }
 }

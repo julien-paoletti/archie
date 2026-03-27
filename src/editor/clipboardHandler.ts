@@ -6,6 +6,7 @@
 import {
     Boundary,
     Component,
+    Connection,
     Domain,
     Label,
     Module,
@@ -18,13 +19,22 @@ import {
     type DiagramElement
 } from '../canvas/index';
 import type { EditorState } from './editorState';
-import type { SerializedComponent } from './editorTypes';
+import type { SerializedComponent, SerializedConnection } from './editorTypes';
 import { getSortedComponentsForRendering } from './selectionHandler';
 
-export function copy(state: EditorState, clipboard: SerializedComponent[]): boolean {
+export interface ClipboardData {
+    elements: SerializedComponent[];
+    connections: SerializedConnection[];
+}
+
+export function copy(state: EditorState, clipboard: ClipboardData): boolean {
     if (state.selectedElements.length === 0) return false;
 
-    clipboard.length = 0;
+    clipboard.elements.length = 0;
+    clipboard.connections.length = 0;
+
+    const selectedIds = new Set(state.selectedElements.map(el => el.id));
+
     for (const el of state.selectedElements) {
         const base: SerializedComponent = {
             type: (el.constructor as { type?: string }).type ?? 'unknown',
@@ -74,7 +84,24 @@ export function copy(state: EditorState, clipboard: SerializedComponent[]): bool
         if ((el instanceof Component || el instanceof User || el instanceof Module || el instanceof Domain || el instanceof System || el instanceof Boundary) && el.borderColor) {
             base.borderColor = el.borderColor;
         }
-        clipboard.push(base);
+        clipboard.elements.push(base);
+    }
+
+    // Copy connections between selected elements
+    for (const conn of state.connections) {
+        if (selectedIds.has(conn.sourcePoint.componentId) && selectedIds.has(conn.targetPoint.componentId)) {
+            clipboard.connections.push({
+                id: conn.id,
+                sourcePoint: { ...conn.sourcePoint },
+                targetPoint: { ...conn.targetPoint },
+                ...(conn.strokeColor !== '#6366f1' && { strokeColor: conn.strokeColor }),
+                ...(conn.strokeWidth !== 2 && { strokeWidth: conn.strokeWidth }),
+                ...(conn.label && { label: conn.label }),
+                ...(conn.lineStyle !== 'solid' && { lineStyle: conn.lineStyle }),
+                ...(conn.arrowType !== 'filled' && { arrowType: conn.arrowType }),
+                ...(conn.curveType !== 'bezier' && { curveType: conn.curveType }),
+            });
+        }
     }
 
     return true;
@@ -82,12 +109,12 @@ export function copy(state: EditorState, clipboard: SerializedComponent[]): bool
 
 export function paste(
     state: EditorState,
-    clipboard: SerializedComponent[],
+    clipboard: ClipboardData,
     saveState: () => void,
     saveToStorage: () => void,
     render: () => void
 ): boolean {
-    if (clipboard.length === 0) return false;
+    if (clipboard.elements.length === 0) return false;
 
     saveState();
 
@@ -96,8 +123,11 @@ export function paste(
     state.selectedElements.forEach(el => el.selected = false);
     state.selectedElements = [];
 
+    // Map old element IDs to newly created elements
+    const idMap = new Map<string, string>();
     const newElements: DiagramElement[] = [];
-    clipboard.forEach(item => {
+
+    clipboard.elements.forEach(item => {
         const newItem = {
             ...item,
             id: undefined,
@@ -106,6 +136,7 @@ export function paste(
             parentId: null
         };
         const element = elementRegistry.createInstance(item.type, newItem);
+        idMap.set(item.id, element.id);
         state.elements.push(element);
         newElements.push(element);
     });
@@ -115,9 +146,24 @@ export function paste(
         state.selectedElements.push(el);
     });
 
+    // Recreate connections with remapped IDs
+    for (const connData of clipboard.connections) {
+        const newSourceId = idMap.get(connData.sourcePoint.componentId);
+        const newTargetId = idMap.get(connData.targetPoint.componentId);
+        if (newSourceId && newTargetId) {
+            const conn = new Connection({
+                ...connData,
+                id: undefined as any,
+                sourcePoint: { ...connData.sourcePoint, componentId: newSourceId },
+                targetPoint: { ...connData.targetPoint, componentId: newTargetId },
+            });
+            state.connections.push(conn);
+        }
+    }
+
     // Update clipboard positions for subsequent pastes
-    for (let i = 0; i < clipboard.length; i++) {
-        clipboard[i] = { ...clipboard[i]!, x: clipboard[i]!.x + offset, y: clipboard[i]!.y + offset };
+    for (let i = 0; i < clipboard.elements.length; i++) {
+        clipboard.elements[i] = { ...clipboard.elements[i]!, x: clipboard.elements[i]!.x + offset, y: clipboard.elements[i]!.y + offset };
     }
 
     render();

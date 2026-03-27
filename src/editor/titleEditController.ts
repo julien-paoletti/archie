@@ -49,9 +49,29 @@ export function startTitleEdit(state: TitleEditState, component: DiagramElement,
     const isUser = component instanceof User;
 
     if (isBoundary) {
-        input.style.left = `${canvasRect.left + screenPos.x + 8 * scale}px`;
-        input.style.top = `${canvasRect.top + screenPos.y + 4 * scale}px`;
-        input.style.width = `${150 * scale}px`;
+        const bnd = component as Boundary;
+        const inputWidth = 150 * scale;
+        const inputHeight = 28 * scale;
+        const pad = 8 * scale;
+        let bLeft: number;
+        let bTop: number;
+        if (bnd.labelPosition === 'top-right') {
+            bLeft = canvasRect.left + screenPos.x + scaledWidth - pad - inputWidth;
+            bTop = canvasRect.top + screenPos.y + pad;
+        } else if (bnd.labelPosition === 'bottom-left') {
+            bLeft = canvasRect.left + screenPos.x + pad;
+            bTop = canvasRect.top + screenPos.y + scaledHeight - pad - inputHeight;
+        } else if (bnd.labelPosition === 'bottom-right') {
+            bLeft = canvasRect.left + screenPos.x + scaledWidth - pad - inputWidth;
+            bTop = canvasRect.top + screenPos.y + scaledHeight - pad - inputHeight;
+        } else {
+            // top-left (default)
+            bLeft = canvasRect.left + screenPos.x + pad;
+            bTop = canvasRect.top + screenPos.y + pad;
+        }
+        input.style.left = `${bLeft}px`;
+        input.style.top = `${bTop}px`;
+        input.style.width = `${inputWidth}px`;
         input.style.textAlign = 'left';
         input.style.color = '#64748B';
         input.style.fontWeight = '400';
@@ -142,8 +162,27 @@ export function updateTitlePosition(state: TitleEditState, callbacks: EditCallba
     const isUser = comp instanceof User;
 
     if (isBoundary) {
-        state.titleInput.style.left = `${canvasRect.left + screenPos.x + 8 * scale}px`;
-        state.titleInput.style.top = `${canvasRect.top + screenPos.y + 4 * scale}px`;
+        const bnd = comp as Boundary;
+        const inputWidth = 150 * scale;
+        const inputHeight = 28 * scale;
+        const pad = 8 * scale;
+        let bLeft: number;
+        let bTop: number;
+        if (bnd.labelPosition === 'top-right') {
+            bLeft = canvasRect.left + screenPos.x + scaledWidth - pad - inputWidth;
+            bTop = canvasRect.top + screenPos.y + pad;
+        } else if (bnd.labelPosition === 'bottom-left') {
+            bLeft = canvasRect.left + screenPos.x + pad;
+            bTop = canvasRect.top + screenPos.y + scaledHeight - pad - inputHeight;
+        } else if (bnd.labelPosition === 'bottom-right') {
+            bLeft = canvasRect.left + screenPos.x + scaledWidth - pad - inputWidth;
+            bTop = canvasRect.top + screenPos.y + scaledHeight - pad - inputHeight;
+        } else {
+            bLeft = canvasRect.left + screenPos.x + pad;
+            bTop = canvasRect.top + screenPos.y + pad;
+        }
+        state.titleInput.style.left = `${bLeft}px`;
+        state.titleInput.style.top = `${bTop}px`;
     } else if (isUser) {
         const centerX = screenPos.x + scaledWidth / 2;
         const titleY = screenPos.y + scaledHeight + 14 * scale;
