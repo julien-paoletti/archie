@@ -112,6 +112,12 @@ export function startTitleEdit(state: TitleEditState, component: DiagramElement,
     input.style.padding = `0 ${8 * scale}px`;
     input.style.background = 'transparent';
 
+    if (isBoundary) {
+        input.style.background = 'rgba(255,255,255,0.85)';
+        input.style.border = `${Math.max(1, scale)}px solid #94A3B8`;
+        input.style.borderRadius = `${4 * scale}px`;
+    }
+
     attachInputListeners(input, () => finishTitleEdit(state, callbacks), () => cancelTitleEdit(state, callbacks));
     state.titleInput = input;
     mountAndFocus(input);
