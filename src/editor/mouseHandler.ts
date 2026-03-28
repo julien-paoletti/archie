@@ -186,9 +186,56 @@ export function handleMouseDown(state: EditorState, e: MouseEvent, callbacks: Mo
 
         // Ctrl+drag to clone
         if (e.ctrlKey) {
-            const clone = cloneDeep(element, state.elements);
-            state.draggedComponent = clone;
-            selectElement(state, clone);
+            const isMultiSelect = state.selectedElements.length > 1 && state.selectedElements.includes(element);
+            if (isMultiSelect) {
+                // Clone all selected elements, preserving relative order and hierarchy
+                const idMap = new Map<string, string>();
+                const clones: DiagramElement[] = [];
+
+                // Only clone top-level selected elements (skip children whose parent is also selected)
+                const selectedIds = new Set(state.selectedElements.map(e => e.id));
+                const topLevel = state.selectedElements.filter(e => !e.parentId || !selectedIds.has(e.parentId));
+
+                for (const el of topLevel) {
+                    const c = cloneDeep(el, state.elements);
+                    idMap.set(el.id, c.id);
+                    clones.push(c);
+                }
+
+                // Clone connections between selected elements
+                for (const conn of state.connections) {
+                    const newSrcId = idMap.get(conn.sourcePoint.componentId);
+                    const newTgtId = idMap.get(conn.targetPoint.componentId);
+                    if (newSrcId && newTgtId) {
+                        const connClone = new Connection({
+                            ...conn,
+                            id: undefined as any,
+                            sourcePoint: { ...conn.sourcePoint, componentId: newSrcId },
+                            targetPoint: { ...conn.targetPoint, componentId: newTgtId },
+                            customControlPoint1: conn.customControlPoint1 ?? undefined,
+                            customControlPoint2: conn.customControlPoint2 ?? undefined,
+                        });
+                        state.connections.push(connClone);
+                    }
+                }
+
+                // Make clones the new selection
+                state.selectedElements.forEach(el => { el.selected = false; });
+                state.selectedElements = [];
+                for (const c of clones) {
+                    c.selected = true;
+                    state.selectedElements.push(c);
+                }
+
+                // Use clone of clicked element as the drag handle
+                const clickedClone = clones[topLevel.indexOf(element)] ?? clones[0]!;
+                state.draggedComponent = clickedClone;
+                state.dragOffset = { x: pos.x - clickedClone.x, y: pos.y - clickedClone.y };
+            } else {
+                const clone = cloneDeep(element, state.elements);
+                state.draggedComponent = clone;
+                selectElement(state, clone);
+            }
             state.isCloneDrag = true;
         } else {
             state.draggedComponent = element;
