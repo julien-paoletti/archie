@@ -139,30 +139,30 @@ export class Port extends DiagramElement {
         return null;
     }
 
-    override resize(): void {}
+    override resize(): void { }
 
     getNearestBorderPoint(px: number, py: number, threshold: number = CONNECTION_POINT_HITBOX): { point: { x: number; y: number }; side: 'top' | 'right' | 'bottom' | 'left'; offset: number } | null {
         const { x, y } = this;
         const s = PORT_SIZE;
         const inner = CONNECTION_POINT_INSIDE_MARGIN;
 
-        const nearLeft   = Math.abs(px - x) <= threshold          && py >= y - threshold         && py <= y + s + threshold;
-        const nearRight  = Math.abs(px - (x + s)) <= threshold    && py >= y - threshold         && py <= y + s + threshold;
-        const nearTop    = Math.abs(py - y) <= threshold          && px >= x - threshold         && px <= x + s + threshold;
-        const nearBottom = Math.abs(py - (y + s)) <= threshold    && px >= x - threshold         && px <= x + s + threshold;
+        const nearLeft = Math.abs(px - x) <= threshold && py >= y - threshold && py <= y + s + threshold;
+        const nearRight = Math.abs(px - (x + s)) <= threshold && py >= y - threshold && py <= y + s + threshold;
+        const nearTop = Math.abs(py - y) <= threshold && px >= x - threshold && px <= x + s + threshold;
+        const nearBottom = Math.abs(py - (y + s)) <= threshold && px >= x - threshold && px <= x + s + threshold;
 
         const inside = px >= x - inner && px <= x + s + inner && py >= y - inner && py <= y + s + inner;
         if (!inside && !nearLeft && !nearRight && !nearTop && !nearBottom) return null;
 
-        const distLeft   = Math.abs(px - x);
-        const distRight  = Math.abs(px - (x + s));
-        const distTop    = Math.abs(py - y);
+        const distLeft = Math.abs(px - x);
+        const distRight = Math.abs(px - (x + s));
+        const distTop = Math.abs(py - y);
         const distBottom = Math.abs(py - (y + s));
         const minDist = Math.min(distLeft, distRight, distTop, distBottom);
 
-        if (minDist === distLeft)   return { point: { x,     y: y + s / 2 }, side: 'left',   offset: 0.5 };
-        if (minDist === distRight)  return { point: { x: x + s, y: y + s / 2 }, side: 'right',  offset: 0.5 };
-        if (minDist === distTop)    return { point: { x: x + s / 2, y },     side: 'top',    offset: 0.5 };
+        if (minDist === distLeft) return { point: { x, y: y + s / 2 }, side: 'left', offset: 0.5 };
+        if (minDist === distRight) return { point: { x: x + s, y: y + s / 2 }, side: 'right', offset: 0.5 };
+        if (minDist === distTop) return { point: { x: x + s / 2, y }, side: 'top', offset: 0.5 };
         return { point: { x: x + s / 2, y: y + s }, side: 'bottom', offset: 0.5 };
     }
 
@@ -188,6 +188,6 @@ export class Port extends DiagramElement {
     }
 
     static override createDefault(): Port {
-        return new Port({ title: '' });
+        return new Port({ title: 'HTTP', portNumber: 80 });
     }
 }
