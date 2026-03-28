@@ -5,6 +5,7 @@
 
 import {
     Boundary,
+    ContainerElement,
     Domain,
     Label,
     Module,
@@ -325,8 +326,17 @@ export function handleMouseMove(
             }
         }
 
-        // Reposition ports snapped to any of the moving elements
+        // Reposition ports snapped to any of the moving elements (including all descendants of moving containers)
         const movingIds = new Set(state.selectedElements.map(el => el.id));
+        const collectDescendants = (el: DiagramElement) => {
+            if (el instanceof ContainerElement) {
+                for (const child of el.children) {
+                    movingIds.add(child.id);
+                    collectDescendants(child);
+                }
+            }
+        };
+        for (const el of state.selectedElements) collectDescendants(el);
         updateSnappedPorts(state.elements, movingIds);
 
         const rightEdge = state.draggedComponent.x + state.draggedComponent.width;
