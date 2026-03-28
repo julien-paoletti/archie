@@ -349,17 +349,17 @@ export class ContextMenuHandler {
         if (selectedElements.length > 1 && selectedElements.includes(element)) {
             items.push({ separator: true });
             items.push({
-                icon: 'object-scan',
+                icon: 'box-model-2',
                 label: 'Group into Module',
                 action: () => this.callbacks.groupSelectedIntoModule()
             });
             items.push({
-                icon: 'align-center-horizontal',
+                icon: 'layout-align-center',
                 label: 'Align Center Horizontally',
                 action: () => this.callbacks.alignSelectedHorizontally()
             });
             items.push({
-                icon: 'align-center-vertical',
+                icon: 'layout-align-middle',
                 label: 'Align Center Vertically',
                 action: () => this.callbacks.alignSelectedVertically()
             });
