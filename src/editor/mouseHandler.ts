@@ -8,6 +8,7 @@ import {
     ContainerElement,
     Domain,
     Module,
+    Port,
     System,
     type DiagramElement
 } from '../canvas/index';
@@ -145,7 +146,11 @@ export function handleMouseDown(state: EditorState, e: MouseEvent, callbacks: Mo
     }
 
     // Check if clicking on a connection point (starting a connection)
-    if (state.hoverConnectionPoint && !e.ctrlKey) {
+    // Ports are target-only — connections cannot originate from them
+    const hoverSource = state.hoverConnectionPoint
+        ? state.elements.find(el => el.id === state.hoverConnectionPoint!.componentId)
+        : null;
+    if (state.hoverConnectionPoint && !e.ctrlKey && !(hoverSource instanceof Port)) {
         state.isConnecting = true;
         state.sourceConnectionPoint = {
             x: state.hoverConnectionPoint.point.x,

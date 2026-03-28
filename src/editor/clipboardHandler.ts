@@ -12,6 +12,7 @@ import {
     Module,
     Note,
     NumberedDot,
+    Port,
     System,
     Tag,
     User,
@@ -77,6 +78,10 @@ export function copy(state: EditorState, clipboard: ClipboardData): boolean {
             if (el.fontSize !== 11) {
                 base.fontSize = el.fontSize;
             }
+        }
+        if (el instanceof Port) {
+            if (el.portNumber !== null) base.portNumber = el.portNumber;
+            if (el.portColor !== '#475569') base.portColor = el.portColor;
         }
         if (el instanceof Boundary && el.labelPosition !== 'top-left') {
             base.labelPosition = el.labelPosition;

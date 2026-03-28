@@ -9,6 +9,7 @@ import {
     Connection,
     Domain,
     Module,
+    Port,
     System,
     NumberedDot,
     Tag,
@@ -225,7 +226,7 @@ export function getSortedComponentsForRendering(state: EditorState): DiagramElem
     const numberedDots: DiagramElement[] = [];
 
     for (const comp of state.elements) {
-        if (comp instanceof NumberedDot || comp instanceof Tag) {
+        if (comp instanceof NumberedDot || comp instanceof Tag || comp instanceof Port) {
             numberedDots.push(comp);
         } else if (comp instanceof Boundary) {
             boundaries.push(comp);

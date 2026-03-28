@@ -3,7 +3,7 @@
  * Handles inline editing for Label, NumberedDot, Tag, Connection label, Description, and Note
  */
 
-import { Component, Connection, Label, Note, NumberedDot, Tag } from '../canvas/index';
+import { Component, Connection, Label, Note, NumberedDot, Port, Tag } from '../canvas/index';
 import type { EditCallbacks } from './editUtils';
 import { createInput, attachInputListeners, mountAndFocus } from './editUtils';
 
@@ -20,6 +20,8 @@ export interface ElementEditState {
     dotInput: HTMLInputElement | null;
     editingTag: Tag | null;
     tagInput: HTMLInputElement | null;
+    editingPort: Port | null;
+    portInput: HTMLInputElement | null;
 }
 
 export interface ElementEditExtraCallbacks extends EditCallbacks {
@@ -33,7 +35,8 @@ export function createElementEditState(): ElementEditState {
         editingNote: null, noteTextarea: null,
         editingLabel: null, labelInput: null,
         editingDot: null, dotInput: null,
-        editingTag: null, tagInput: null
+        editingTag: null, tagInput: null,
+        editingPort: null, portInput: null
     };
 }
 
@@ -435,6 +438,63 @@ function cleanupTag(state: ElementEditState): void {
     state.editingTag = null;
 }
 
+// --- Port number ---
+export function startPortNumberEdit(state: ElementEditState, port: Port, callbacks: EditCallbacks): void {
+    if (state.editingPort) finishPortNumberEdit(state, callbacks);
+
+    state.editingPort = port;
+    callbacks.render();
+
+    const canvasRect = callbacks.getCanvasRect();
+    const scale = callbacks.getScale();
+    const screenPos = callbacks.worldToScreen(port.x, port.y);
+    const size = 28 * scale;
+    const inputWidth = 50 * scale;
+
+    const input = createInput('number', 'title-edit-input');
+    input.value = port.portNumber !== null ? port.portNumber.toString() : '';
+    input.placeholder = '#';
+    input.min = '0';
+    input.style.left = `${canvasRect.left + screenPos.x + size / 2 - inputWidth / 2}px`;
+    input.style.top = `${canvasRect.top + screenPos.y + size + 4 * scale}px`;
+    input.style.width = `${inputWidth}px`;
+    input.style.height = `${28 * scale}px`;
+    input.style.textAlign = 'center';
+    input.style.color = port.portColor;
+    input.style.fontWeight = '700';
+    input.style.fontSize = `${Math.max(10, Math.round(14 * scale))}px`;
+    input.style.padding = `0 ${4 * scale}px`;
+    input.style.background = '#ffffff';
+    input.style.border = `2px solid ${port.portColor}`;
+    input.style.borderRadius = '4px';
+
+    const cancel = () => { cleanupPort(state); callbacks.render(); };
+
+    attachInputListeners(input, () => finishPortNumberEdit(state, callbacks), cancel);
+    state.portInput = input;
+    mountAndFocus(input);
+}
+
+function finishPortNumberEdit(state: ElementEditState, callbacks: EditCallbacks): void {
+    if (!state.editingPort || !state.portInput) return;
+    const raw = state.portInput.value.trim();
+    const newNumber = raw === '' ? null : parseInt(raw);
+    const parsed = newNumber === null || !isNaN(newNumber) ? newNumber : state.editingPort.portNumber;
+    if (parsed !== state.editingPort.portNumber) {
+        callbacks.saveState();
+        state.editingPort.portNumber = parsed;
+        callbacks.saveToStorage();
+    }
+    cleanupPort(state);
+    callbacks.render();
+}
+
+function cleanupPort(state: ElementEditState): void {
+    if (state.portInput?.parentElement) state.portInput.remove();
+    state.portInput = null;
+    state.editingPort = null;
+}
+
 // --- Position updates ---
 export function updateElementEditPositions(state: ElementEditState, callbacks: ElementEditExtraCallbacks): void {
     const scale = callbacks.getScale();
@@ -492,5 +552,14 @@ export function updateElementEditPositions(state: ElementEditState, callbacks: E
         state.tagInput.style.top = `${canvasRect.top + screenPos.y}px`;
         state.tagInput.style.width = `${state.editingTag.width * scale}px`;
         state.tagInput.style.height = `${state.editingTag.height * scale}px`;
+    }
+
+    if (state.editingPort && state.portInput) {
+        const port = state.editingPort;
+        const screenPos = callbacks.worldToScreen(port.x, port.y);
+        const size = 28 * scale;
+        const inputWidth = 50 * scale;
+        state.portInput.style.left = `${canvasRect.left + screenPos.x + size / 2 - inputWidth / 2}px`;
+        state.portInput.style.top = `${canvasRect.top + screenPos.y + size + 4 * scale}px`;
     }
 }

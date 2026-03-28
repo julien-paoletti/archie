@@ -3,7 +3,7 @@
  * Manages zoom, pan, auto-scroll, and world sizing
  */
 
-import { Domain, Module, System, NumberedDot, Tag, type DiagramElement, type Point } from '../canvas/index';
+import { Domain, Module, Port, System, NumberedDot, Tag, type DiagramElement, type Point } from '../canvas/index';
 import {
     type EditorState,
     EDGE_THRESHOLD,
@@ -184,7 +184,7 @@ export function startAutoScroll(
                 let newX = pos.x - state.dragOffset.x;
                 let newY = pos.y - state.dragOffset.y;
 
-                if (state.snapToGrid && !(state.draggedComponent instanceof NumberedDot) && !(state.draggedComponent instanceof Tag)) {
+                if (state.snapToGrid && !(state.draggedComponent instanceof NumberedDot) && !(state.draggedComponent instanceof Tag) && !(state.draggedComponent instanceof Port)) {
                     newX = Math.round(newX / state.gridSize) * state.gridSize;
                     newY = Math.round(newY / state.gridSize) * state.gridSize;
                 }

@@ -36,6 +36,11 @@ export interface SerializedComponent {
     textColor?: string;
     accentColor?: string;
     noteBorderColor?: string;
+    portNumber?: number | null;
+    portColor?: string;
+    snappedToId?: string | null;
+    snappedSide?: string | null;
+    snappedOffset?: number | null;
 }
 
 export interface SerializedConnection {

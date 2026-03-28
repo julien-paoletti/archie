@@ -26,6 +26,7 @@ export { Note } from './note';
 export { NumberedDot } from './numberedDot';
 export { Label } from './label';
 export { Tag } from './tag';
+export { Port, PORT_SIZE, PORT_SNAP_THRESHOLD } from './port';
 
 // Connections
 export { Connection, getControlPoint, controlDistance, distance } from './connection';
@@ -48,6 +49,7 @@ import { Note } from './note';
 import { NumberedDot } from './numberedDot';
 import { Label } from './label';
 import { Tag } from './tag';
+import { Port } from './port';
 
 elementRegistry.register(Component);
 elementRegistry.register(Module);
@@ -59,3 +61,4 @@ elementRegistry.register(Note);
 elementRegistry.register(NumberedDot);
 elementRegistry.register(Label);
 elementRegistry.register(Tag);
+elementRegistry.register(Port);

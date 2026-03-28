@@ -3,7 +3,7 @@
  * Thin coordinator that delegates to focused edit controllers
  */
 
-import { Component, Connection, Label, Note, NumberedDot, Tag, type DiagramElement } from '../canvas/index';
+import { Component, Connection, Label, Note, NumberedDot, Port, Tag, type DiagramElement } from '../canvas/index';
 import type { EditCallbacks } from './editUtils';
 import type { ElementEditExtraCallbacks } from './elementEditController';
 import { createTitleEditState, startTitleEdit, finishTitleEdit, cancelTitleEdit, updateTitlePosition, type TitleEditState } from './titleEditController';
@@ -17,6 +17,7 @@ import {
     finishNoteEdit as _finishNote,
     startLabelEdit as _startLabel,
     startNumberEdit as _startNumber,
+    startPortNumberEdit as _startPortNumber,
     startTagEdit as _startTag,
     updateElementEditPositions,
     type ElementEditState
@@ -68,7 +69,8 @@ export class InlineEditController {
             this.elementState.editingNote !== null ||
             this.elementState.editingLabel !== null ||
             this.elementState.editingDot !== null ||
-            this.elementState.editingTag !== null;
+            this.elementState.editingTag !== null ||
+            this.elementState.editingPort !== null;
     }
 
     updatePositions(): void {
@@ -92,4 +94,5 @@ export class InlineEditController {
     startLabelEdit(label: Label): void { _startLabel(this.elementState, label, this.callbacks); }
     startNumberEdit(dot: NumberedDot): void { _startNumber(this.elementState, dot, this.callbacks); }
     startTagEdit(tag: Tag): void { _startTag(this.elementState, tag, this.callbacks); }
+    startPortNumberEdit(port: Port): void { _startPortNumber(this.elementState, port, this.callbacks); }
 }

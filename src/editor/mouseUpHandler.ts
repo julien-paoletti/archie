@@ -11,6 +11,7 @@ import {
     Module,
     Note,
     NumberedDot,
+    Port,
     System,
     Tag,
     type ConnectionPoint,
@@ -19,7 +20,7 @@ import {
 import type { EditorState } from './editorState';
 import { screenToWorld, stopAutoScroll } from './viewportHandler';
 import { selectElement } from './selectionHandler';
-import { resolveOverlapInContainer, resolveOverlapAtLevel } from './dragDropHandler';
+import { resolveOverlapInContainer, resolveOverlapAtLevel, snapPortToBorder } from './dragDropHandler';
 
 export interface MouseUpCallbacks {
     render: () => void;
@@ -119,6 +120,10 @@ export function handleMouseUp(state: EditorState, callbacks: MouseUpCallbacks): 
     }
 
     if (state.isDragging) {
+        for (const comp of getDraggedComponents(state)) {
+            if (comp instanceof Port) snapPortToBorder(comp, state.elements);
+        }
+
         handleDragEnd(state);
         state.potentialDropTarget = null;
         state.isDragging = false;
@@ -210,6 +215,12 @@ function canDropInto(comp: DiagramElement, target: Module | Domain | System): bo
     return true;
 }
 
+function getDraggedComponents(state: EditorState): DiagramElement[] {
+    return state.selectedElements.length > 1 && state.draggedComponent && state.selectedElements.includes(state.draggedComponent)
+        ? state.selectedElements
+        : (state.draggedComponent ? [state.draggedComponent] : []);
+}
+
 function handleDragEnd(state: EditorState): void {
     if (state.potentialDropTarget && state.draggedComponent && canDropInto(state.draggedComponent, state.potentialDropTarget)) {
         const targetContainer = state.potentialDropTarget;
@@ -240,9 +251,7 @@ function handleDragEnd(state: EditorState): void {
 
         targetContainer.recalculateBounds();
     } else if (!state.potentialDropTarget) {
-        const componentsToCheck = state.selectedElements.length > 1 && state.draggedComponent && state.selectedElements.includes(state.draggedComponent)
-            ? state.selectedElements
-            : (state.draggedComponent ? [state.draggedComponent] : []);
+        const componentsToCheck = getDraggedComponents(state);
 
         for (const comp of componentsToCheck) {
             if (comp.parentId) {

@@ -10,6 +10,8 @@ import {
     Label,
     Note,
     NumberedDot,
+    Port,
+    PORT_SIZE,
     Tag,
     type DiagramElement
 } from './canvas/index';
@@ -142,7 +144,11 @@ export class Editor {
             removeConnection: (conn) => connection.removeConnection(this.state, conn, () => this.saveState(), () => this.saveToStorage(), () => this.render()),
             changeBorderColor: (el, color) => {
                 this.saveState();
-                (el as any).borderColor = color;
+                if (el instanceof Port) {
+                    el.portColor = color;
+                } else {
+                    (el as any).borderColor = color;
+                }
                 this.saveToStorage();
                 this.render();
             },
@@ -198,10 +204,13 @@ export class Editor {
                 this.saveToStorage();
                 this.render();
             },
+            startPortNumberEdit: (port) => this.inlineEditController.startPortNumberEdit(port),
             alignSelectedVertically: () => selection.alignSelectedElementsVertically(this.state, () => this.saveState(), () => this.saveToStorage(), () => this.render()),
             alignSelectedHorizontally: () => selection.alignSelectedElementsHorizontally(this.state, () => this.saveState(), () => this.saveToStorage(), () => this.render()),
             groupSelectedIntoModule: () => dragDrop.groupIntoModule(this.state, () => this.saveState(), () => this.saveToStorage(), () => this.render()),
             getSelectedElements: () => this.state.selectedElements,
+            getElements: () => this.state.elements,
+            addPortToConnection: (conn, end) => this.addPortToConnection(conn, end),
             removeElement: (el) => dragDrop.removeComponent(this.state, el, () => this.saveState(), () => this.saveToStorage(), () => this.render())
         });
     }
@@ -306,19 +315,22 @@ export class Editor {
         this.contextMenuHandler.setClickPos(pos);
         this.contextMenuHandler.setAnchorIndex(null);
 
-        const clickedConnection = this.state.connections.find(conn =>
-            conn.containsPoint(pos.x, pos.y, this.state.elements, 15)
-        );
-        if (clickedConnection) {
-            if (clickedConnection.selected) {
-                const anchorIdx = clickedConnection.getIntermediateAnchorAtPosition(pos.x, pos.y, 12);
-                if (anchorIdx !== null) this.contextMenuHandler.setAnchorIndex(anchorIdx);
-            }
-            this.contextMenuHandler.show(e.clientX, e.clientY, clickedConnection);
-            return;
-        }
-
         const clickedElement = selection.findComponentAtPoint(this.state, pos.x, pos.y);
+
+        // Port takes priority over connections that pass through it
+        if (!(clickedElement instanceof Port)) {
+            const clickedConnection = this.state.connections.find(conn =>
+                conn.containsPoint(pos.x, pos.y, this.state.elements, 15)
+            );
+            if (clickedConnection) {
+                if (clickedConnection.selected) {
+                    const anchorIdx = clickedConnection.getIntermediateAnchorAtPosition(pos.x, pos.y, 12);
+                    if (anchorIdx !== null) this.contextMenuHandler.setAnchorIndex(anchorIdx);
+                }
+                this.contextMenuHandler.show(e.clientX, e.clientY, clickedConnection);
+                return;
+            }
+        }
         if (clickedElement) {
             this.contextMenuHandler.show(e.clientX, e.clientY, clickedElement);
             return;
@@ -379,6 +391,41 @@ export class Editor {
     getSelectedConnection(): Connection | null { return this.state.selectedConnection; }
     removeConnection(conn: Connection): void {
         connection.removeConnection(this.state, conn, () => this.saveState(), () => this.saveToStorage(), () => this.render());
+    }
+
+    private addPortToConnection(conn: Connection, end: 'source' | 'target'): void {
+        const point = end === 'source' ? conn.sourcePoint : conn.targetPoint;
+        const host = this.state.elements.find(e => e.id === point.componentId);
+        if (!host) return;
+
+        this.saveState();
+
+        const borderPt = host.getPointOnBorder(point.side, point.offset);
+        const port = new Port({
+            x: borderPt.x - PORT_SIZE / 2,
+            y: borderPt.y - PORT_SIZE / 2,
+            title: '',
+            snappedToId: host.id,
+            snappedSide: point.side,
+            snappedOffset: point.offset,
+        });
+        this.state.elements.push(port);
+
+        const newPoint = {
+            x: borderPt.x,
+            y: borderPt.y,
+            componentId: port.id,
+            side: point.side,
+            offset: 0.5
+        };
+        if (end === 'source') {
+            conn.sourcePoint = newPoint;
+        } else {
+            conn.targetPoint = newPoint;
+        }
+
+        this.saveToStorage();
+        this.render();
     }
 
     getComponents(): DiagramElement[] { return [...this.state.elements]; }

@@ -4,7 +4,7 @@
  */
 
 import type { DiagramElement, Connection, Point, LineStyle, ArrowType, CurveType } from '../canvas/index';
-import { Boundary, Component, Domain, Label, Module, Note, System, Tag, User, COLOR_PALETTE, NOTE_COLORS, TAG_COLORS } from '../canvas/index';
+import { Boundary, Component, Domain, Label, Module, Note, Port, System, Tag, User, COLOR_PALETTE, NOTE_COLORS, TAG_COLORS } from '../canvas/index';
 
 export interface ContextMenuItem {
     icon?: string;
@@ -31,6 +31,7 @@ export interface ContextMenuCallbacks {
     resetConnectionCurve: (connection: Connection) => void;
     reverseConnection: (connection: Connection) => void;
     removeConnection: (connection: Connection) => void;
+    addPortToConnection: (connection: Connection, end: 'source' | 'target') => void;
     changeConnectionLineStyle: (connection: Connection, style: LineStyle) => void;
     changeConnectionArrowType: (connection: Connection, type: ArrowType) => void;
     changeConnectionCurveType: (connection: Connection, type: CurveType) => void;
@@ -40,10 +41,12 @@ export interface ContextMenuCallbacks {
     changeConnectionStrokeColor: (connection: Connection, color: string) => void;
     changeFontSize: (element: Label | Note, delta: number) => void;
     changeBoundaryLabelPosition: (element: Boundary, position: string) => void;
+    startPortNumberEdit: (port: Port) => void;
     alignSelectedVertically: () => void;
     alignSelectedHorizontally: () => void;
     groupSelectedIntoModule: () => void;
     getSelectedElements: () => DiagramElement[];
+    getElements: () => DiagramElement[];
     removeElement: (element: DiagramElement) => void;
 }
 
@@ -169,6 +172,30 @@ export class ContextMenuHandler {
             action: () => this.callbacks.reverseConnection(connection)
         });
 
+        // Add port options (only for endpoints not already on a Port)
+        const elements = this.callbacks.getElements();
+        const srcEl = elements.find(e => e.id === connection.sourcePoint.componentId);
+        const tgtEl = elements.find(e => e.id === connection.targetPoint.componentId);
+        const canAddSrc = srcEl && !(srcEl instanceof Port);
+        const canAddTgt = tgtEl && !(tgtEl instanceof Port);
+        if (canAddSrc || canAddTgt) {
+            items.push({ separator: true });
+            if (canAddSrc) {
+                items.push({
+                    icon: 'plug',
+                    label: `Add Port to "${srcEl!.title}"`,
+                    action: () => this.callbacks.addPortToConnection(connection, 'source')
+                });
+            }
+            if (canAddTgt) {
+                items.push({
+                    icon: 'plug',
+                    label: `Add Port to "${tgtEl!.title}"`,
+                    action: () => this.callbacks.addPortToConnection(connection, 'target')
+                });
+            }
+        }
+
         // Line style options
         items.push({ separator: true });
         const lineStyles: { value: LineStyle; label: string; icon: string }[] = [
@@ -246,10 +273,10 @@ export class ContextMenuHandler {
     private buildElementMenu(element: DiagramElement): void {
         const items: ContextMenuItem[] = [];
 
-        // Edit title option (for all elements)
+        // Edit title / protocol option
         items.push({
             icon: 'square-letter-t',
-            label: 'Edit Title',
+            label: element instanceof Port ? 'Edit Protocol' : 'Edit Title',
             action: () => this.callbacks.startTitleEdit(element)
         });
 
@@ -315,6 +342,16 @@ export class ContextMenuHandler {
             }
         }
 
+        // Port number option
+        if (element instanceof Port) {
+            items.push({ separator: true });
+            items.push({
+                icon: 'hash',
+                label: element.portNumber !== null ? 'Edit Port Number' : 'Set Port Number',
+                action: () => this.callbacks.startPortNumberEdit(element)
+            });
+        }
+
         // Border color palette (for elements with borderColor)
         if (element instanceof Component || element instanceof User || element instanceof Module || element instanceof Domain || element instanceof System || element instanceof Boundary) {
             items.push({ separator: true });
@@ -322,6 +359,17 @@ export class ContextMenuHandler {
                 colorPalette: {
                     colors: COLOR_PALETTE,
                     current: element.borderColor,
+                    onSelect: (color) => this.callbacks.changeBorderColor(element, color)
+                }
+            });
+        }
+
+        if (element instanceof Port) {
+            items.push({ separator: true });
+            items.push({
+                colorPalette: {
+                    colors: COLOR_PALETTE,
+                    current: element.portColor,
                     onSelect: (color) => this.callbacks.changeBorderColor(element, color)
                 }
             });

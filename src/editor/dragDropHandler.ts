@@ -9,6 +9,8 @@ import {
     Label,
     Module,
     Note,
+    Port,
+    PORT_SNAP_THRESHOLD,
     System,
     NumberedDot,
     Tag,
@@ -24,7 +26,7 @@ import { updateWorldSize } from './viewportHandler';
 
 /** Returns true for annotation/overlay elements that should never be ejected or block others. */
 function isOverlayElement(el: DiagramElement): boolean {
-    return el instanceof Boundary || el instanceof Note || el instanceof Label || el instanceof Tag;
+    return el instanceof Boundary || el instanceof Note || el instanceof Label || el instanceof Tag || el instanceof Port;
 }
 
 /**
@@ -103,6 +105,42 @@ export function resolveOverlapAtLevel(element: DiagramElement, allElements: Diag
     resolveOverlap(element, allElements.filter(c => c !== element && c.parentId === element.parentId));
 }
 
+export function updateSnappedPorts(elements: DiagramElement[], movedIds: Set<string>): void {
+    for (const el of elements) {
+        if (!(el instanceof Port) || !el.snappedToId || !movedIds.has(el.snappedToId)) continue;
+        const host = elements.find(e => e.id === el.snappedToId);
+        if (!host || !el.snappedSide || el.snappedOffset === null) continue;
+        const pt = host.getPointOnBorder(el.snappedSide, el.snappedOffset);
+        el.x = pt.x - el.width / 2;
+        el.y = pt.y - el.height / 2;
+    }
+}
+
+/**
+ * If a Port is being dropped near a component border, snap it to that border
+ * and record the snapping metadata. Clears snapping if not near any border.
+ */
+export function snapPortToBorder(port: Port, elements: DiagramElement[]): void {
+    const cx = port.x + port.width / 2;
+    const cy = port.y + port.height / 2;
+
+    for (const el of elements) {
+        if (el === port || el instanceof Port) continue;
+        const bp = el.getNearestBorderPoint(cx, cy, PORT_SNAP_THRESHOLD);
+        if (bp) {
+            port.snappedToId = el.id;
+            port.snappedSide = bp.side;
+            port.snappedOffset = bp.offset;
+            port.x = bp.point.x - port.width / 2;
+            port.y = bp.point.y - port.height / 2;
+            return;
+        }
+    }
+    port.snappedToId = null;
+    port.snappedSide = null;
+    port.snappedOffset = null;
+}
+
 export function handleDragOver(e: DragEvent): void {
     e.preventDefault();
     if (e.dataTransfer) {
@@ -157,7 +195,7 @@ export function createElement(
     let posX = x - component.width / 2;
     let posY = y - component.height / 2;
 
-    if (state.snapToGrid && !(component instanceof NumberedDot) && !(component instanceof Tag)) {
+    if (state.snapToGrid && !(component instanceof NumberedDot) && !(component instanceof Tag) && !(component instanceof Port)) {
         posX = Math.round(posX / state.gridSize) * state.gridSize;
         posY = Math.round(posY / state.gridSize) * state.gridSize;
     }

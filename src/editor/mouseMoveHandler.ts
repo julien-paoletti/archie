@@ -10,6 +10,7 @@ import {
     Module,
     Note,
     NumberedDot,
+    Port,
     System,
     Tag,
     type ConnectionPoint,
@@ -33,6 +34,7 @@ import {
     isPointCoveredByHigherComponent,
     projectPointOnBorder
 } from './selectionHandler';
+import { updateSnappedPorts } from './dragDropHandler';
 
 export function handleMouseMove(
     state: EditorState,
@@ -243,7 +245,7 @@ export function handleMouseMove(
         let newX = pos.x - state.dragOffset.x;
         let newY = pos.y - state.dragOffset.y;
 
-        if (state.snapToGrid && !(state.draggedComponent instanceof NumberedDot) && !(state.draggedComponent instanceof Tag)) {
+        if (state.snapToGrid && !(state.draggedComponent instanceof NumberedDot) && !(state.draggedComponent instanceof Tag) && !(state.draggedComponent instanceof Port)) {
             newX = Math.round(newX / state.gridSize) * state.gridSize;
             newY = Math.round(newY / state.gridSize) * state.gridSize;
         }
@@ -323,6 +325,10 @@ export function handleMouseMove(
             }
         }
 
+        // Reposition ports snapped to any of the moving elements
+        const movingIds = new Set(state.selectedElements.map(el => el.id));
+        updateSnappedPorts(state.elements, movingIds);
+
         const rightEdge = state.draggedComponent.x + state.draggedComponent.width;
         const bottomEdge = state.draggedComponent.y + state.draggedComponent.height;
         checkAndExtendWorld(state, rightEdge, bottomEdge);
@@ -377,6 +383,8 @@ export function handleMouseMove(
         const borderPoint = component.getNearestBorderPoint(pos.x, pos.y);
         if (borderPoint) {
             if (!isPointCoveredByHigherComponent(state, borderPoint.point, component)) {
+                // For Port: only show connection point when a connection is already being drawn
+                if (component instanceof Port && !state.isConnecting) break;
                 state.hoverConnectionPoint = {
                     ...borderPoint,
                     componentId: component.id

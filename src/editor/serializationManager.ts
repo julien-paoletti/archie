@@ -9,6 +9,7 @@ import {
     Connection,
     Module,
     Domain,
+    Port,
     System,
     Note,
     NumberedDot,
@@ -150,6 +151,15 @@ export class SerializationManager {
                         base.fontSize = c.fontSize;
                     }
                 }
+                if (c instanceof Port) {
+                    if (c.portNumber !== null) base.portNumber = c.portNumber;
+                    if (c.portColor !== '#475569') base.portColor = c.portColor;
+                    if (c.snappedToId) {
+                        base.snappedToId = c.snappedToId;
+                        base.snappedSide = c.snappedSide;
+                        base.snappedOffset = c.snappedOffset;
+                    }
+                }
                 if (c instanceof Boundary && c.labelPosition !== 'top-left') {
                     base.labelPosition = c.labelPosition;
                 }
@@ -256,12 +266,9 @@ export class SerializationManager {
                     }
                     if (data.connections && data.connections.length > 0) {
                         const componentIds = new Set(this.state.elements.map(c => c.id));
-                        const seen = new Set<string>();
                         for (const connData of data.connections) {
-                            if (!seen.has(connData.id) &&
-                                componentIds.has(connData.sourcePoint.componentId) &&
+                            if (componentIds.has(connData.sourcePoint.componentId) &&
                                 componentIds.has(connData.targetPoint.componentId)) {
-                                seen.add(connData.id);
                                 this.state.connections.push(new Connection(connData as any));
                             }
                         }
@@ -284,9 +291,6 @@ export class SerializationManager {
                 }
 
                 this.autoSaveEnabled = true;
-
-                // Re-save to clean up any corrupted/duplicated data
-                this.saveToStorage();
             }
         } catch (err) {
             console.warn('Failed to load diagram from localStorage:', err);

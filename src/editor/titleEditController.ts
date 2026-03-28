@@ -7,6 +7,7 @@ import {
     Component,
     Module,
     Domain,
+    Port,
     System,
     Boundary,
     User,
@@ -66,8 +67,18 @@ export function startTitleEdit(state: TitleEditState, component: DiagramElement,
     const isContainer = component instanceof Module || component instanceof Domain || component instanceof System;
     const isBoundary = component instanceof Boundary;
     const isUser = component instanceof User;
+    const isPort = component instanceof Port;
 
-    if (isBoundary) {
+    if (isPort) {
+        const inputWidth = 80 * scale;
+        input.style.left = `${canvasRect.left + screenPos.x + scaledWidth / 2 - inputWidth / 2}px`;
+        input.style.top = `${canvasRect.top + screenPos.y + scaledHeight + 3 * scale}px`;
+        input.style.width = `${inputWidth}px`;
+        input.style.textAlign = 'center';
+        input.style.color = '#334155';
+        input.style.fontWeight = '500';
+        input.style.fontSize = `${Math.max(8, Math.round(10 * scale))}px`;
+    } else if (isBoundary) {
         const { left, top } = boundaryLabelInputPos(component, canvasRect, screenPos, scaledWidth, scaledHeight, scale);
         input.style.left = `${left}px`;
         input.style.top = `${top}px`;
@@ -112,7 +123,7 @@ export function startTitleEdit(state: TitleEditState, component: DiagramElement,
     input.style.padding = `0 ${8 * scale}px`;
     input.style.background = 'transparent';
 
-    if (isBoundary) {
+    if (isBoundary || isPort) {
         input.style.background = 'rgba(255,255,255,0.85)';
         input.style.border = `${Math.max(1, scale)}px solid #94A3B8`;
         input.style.borderRadius = `${4 * scale}px`;
@@ -166,8 +177,13 @@ export function updateTitlePosition(state: TitleEditState, callbacks: EditCallba
     const isContainer = comp instanceof Module || comp instanceof Domain;
     const isBoundary = comp instanceof Boundary;
     const isUser = comp instanceof User;
+    const isPort = comp instanceof Port;
 
-    if (isBoundary) {
+    if (isPort) {
+        const inputWidth = 80 * scale;
+        state.titleInput.style.left = `${canvasRect.left + screenPos.x + scaledWidth / 2 - inputWidth / 2}px`;
+        state.titleInput.style.top = `${canvasRect.top + screenPos.y + scaledHeight + 3 * scale}px`;
+    } else if (isBoundary) {
         const { left, top } = boundaryLabelInputPos(comp, canvasRect, screenPos, scaledWidth, scaledHeight, scale);
         state.titleInput.style.left = `${left}px`;
         state.titleInput.style.top = `${top}px`;
