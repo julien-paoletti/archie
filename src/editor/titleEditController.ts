@@ -27,6 +27,25 @@ export function createTitleEditState(): TitleEditState {
     return { editingComponent: null, titleInput: null };
 }
 
+function boundaryLabelInputPos(
+    bnd: Boundary,
+    canvasRect: DOMRect,
+    screenPos: { x: number; y: number },
+    scaledWidth: number,
+    scaledHeight: number,
+    scale: number
+): { left: number; top: number } {
+    const inputWidth = 150 * scale;
+    const inputHeight = 28 * scale;
+    const pad = 8 * scale;
+    const x = canvasRect.left + screenPos.x;
+    const y = canvasRect.top + screenPos.y;
+    if (bnd.labelPosition === 'top-right')    return { left: x + scaledWidth - pad - inputWidth, top: y + pad };
+    if (bnd.labelPosition === 'bottom-left')  return { left: x + pad,                            top: y + scaledHeight - pad - inputHeight };
+    if (bnd.labelPosition === 'bottom-right') return { left: x + scaledWidth - pad - inputWidth, top: y + scaledHeight - pad - inputHeight };
+    return { left: x + pad, top: y + pad }; // top-left (default)
+}
+
 export function startTitleEdit(state: TitleEditState, component: DiagramElement, callbacks: EditCallbacks): void {
     if (state.editingComponent) finishTitleEdit(state, callbacks);
 
@@ -49,29 +68,10 @@ export function startTitleEdit(state: TitleEditState, component: DiagramElement,
     const isUser = component instanceof User;
 
     if (isBoundary) {
-        const bnd = component as Boundary;
-        const inputWidth = 150 * scale;
-        const inputHeight = 28 * scale;
-        const pad = 8 * scale;
-        let bLeft: number;
-        let bTop: number;
-        if (bnd.labelPosition === 'top-right') {
-            bLeft = canvasRect.left + screenPos.x + scaledWidth - pad - inputWidth;
-            bTop = canvasRect.top + screenPos.y + pad;
-        } else if (bnd.labelPosition === 'bottom-left') {
-            bLeft = canvasRect.left + screenPos.x + pad;
-            bTop = canvasRect.top + screenPos.y + scaledHeight - pad - inputHeight;
-        } else if (bnd.labelPosition === 'bottom-right') {
-            bLeft = canvasRect.left + screenPos.x + scaledWidth - pad - inputWidth;
-            bTop = canvasRect.top + screenPos.y + scaledHeight - pad - inputHeight;
-        } else {
-            // top-left (default)
-            bLeft = canvasRect.left + screenPos.x + pad;
-            bTop = canvasRect.top + screenPos.y + pad;
-        }
-        input.style.left = `${bLeft}px`;
-        input.style.top = `${bTop}px`;
-        input.style.width = `${inputWidth}px`;
+        const { left, top } = boundaryLabelInputPos(component, canvasRect, screenPos, scaledWidth, scaledHeight, scale);
+        input.style.left = `${left}px`;
+        input.style.top = `${top}px`;
+        input.style.width = `${150 * scale}px`;
         input.style.textAlign = 'left';
         input.style.color = '#64748B';
         input.style.fontWeight = '400';
@@ -168,27 +168,9 @@ export function updateTitlePosition(state: TitleEditState, callbacks: EditCallba
     const isUser = comp instanceof User;
 
     if (isBoundary) {
-        const bnd = comp as Boundary;
-        const inputWidth = 150 * scale;
-        const inputHeight = 28 * scale;
-        const pad = 8 * scale;
-        let bLeft: number;
-        let bTop: number;
-        if (bnd.labelPosition === 'top-right') {
-            bLeft = canvasRect.left + screenPos.x + scaledWidth - pad - inputWidth;
-            bTop = canvasRect.top + screenPos.y + pad;
-        } else if (bnd.labelPosition === 'bottom-left') {
-            bLeft = canvasRect.left + screenPos.x + pad;
-            bTop = canvasRect.top + screenPos.y + scaledHeight - pad - inputHeight;
-        } else if (bnd.labelPosition === 'bottom-right') {
-            bLeft = canvasRect.left + screenPos.x + scaledWidth - pad - inputWidth;
-            bTop = canvasRect.top + screenPos.y + scaledHeight - pad - inputHeight;
-        } else {
-            bLeft = canvasRect.left + screenPos.x + pad;
-            bTop = canvasRect.top + screenPos.y + pad;
-        }
-        state.titleInput.style.left = `${bLeft}px`;
-        state.titleInput.style.top = `${bTop}px`;
+        const { left, top } = boundaryLabelInputPos(comp, canvasRect, screenPos, scaledWidth, scaledHeight, scale);
+        state.titleInput.style.left = `${left}px`;
+        state.titleInput.style.top = `${top}px`;
     } else if (isUser) {
         const centerX = screenPos.x + scaledWidth / 2;
         const titleY = screenPos.y + scaledHeight + 14 * scale;

@@ -94,12 +94,15 @@ export function copy(state: EditorState, clipboard: ClipboardData): boolean {
                 id: conn.id,
                 sourcePoint: { ...conn.sourcePoint },
                 targetPoint: { ...conn.targetPoint },
-                ...(conn.strokeColor !== '#6366f1' && { strokeColor: conn.strokeColor }),
+                ...(conn.strokeColor !== '#64748B' && { strokeColor: conn.strokeColor }),
                 ...(conn.strokeWidth !== 2 && { strokeWidth: conn.strokeWidth }),
                 ...(conn.label && { label: conn.label }),
                 ...(conn.lineStyle !== 'solid' && { lineStyle: conn.lineStyle }),
                 ...(conn.arrowType !== 'filled' && { arrowType: conn.arrowType }),
                 ...(conn.curveType !== 'bezier' && { curveType: conn.curveType }),
+                ...(conn.customControlPoint1 && { customControlPoint1: { ...conn.customControlPoint1 } }),
+                ...(conn.customControlPoint2 && { customControlPoint2: { ...conn.customControlPoint2 } }),
+                ...(conn.intermediateAnchors.length > 0 && { intermediateAnchors: conn.intermediateAnchors.map(a => ({ position: { ...a.position }, handleIn: { ...a.handleIn }, handleOut: { ...a.handleOut } })) }),
             });
         }
     }
@@ -161,9 +164,19 @@ export function paste(
         }
     }
 
-    // Update clipboard positions for subsequent pastes
     for (let i = 0; i < clipboard.elements.length; i++) {
         clipboard.elements[i] = { ...clipboard.elements[i]!, x: clipboard.elements[i]!.x + offset, y: clipboard.elements[i]!.y + offset };
+    }
+    for (const conn of clipboard.connections) {
+        if (conn.customControlPoint1) conn.customControlPoint1 = { x: conn.customControlPoint1.x + offset, y: conn.customControlPoint1.y + offset };
+        if (conn.customControlPoint2) conn.customControlPoint2 = { x: conn.customControlPoint2.x + offset, y: conn.customControlPoint2.y + offset };
+        if (conn.intermediateAnchors) {
+            for (const a of conn.intermediateAnchors) {
+                a.position.x += offset; a.position.y += offset;
+                a.handleIn.x += offset; a.handleIn.y += offset;
+                a.handleOut.x += offset; a.handleOut.y += offset;
+            }
+        }
     }
 
     render();
