@@ -1,0 +1,77 @@
+{
+    "label": "Microservices Platform",
+    "viewport": { "scale": 0.75, "panX": 10, "panY": 10 },
+    "components": [
+        { "type": "system", "id": "sys-platform", "x": 32, "y": 32, "width": 960, "height": 680, "title": "E-Commerce Platform" },
+
+        { "type": "domain", "id": "dom-api", "x": 80, "y": 96, "width": 240, "height": 180, "title": "API Layer", "parentId": "sys-platform" },
+        { "type": "component", "id": "comp-gw", "x": 128, "y": 160, "width": 144, "height": 80, "title": "API Gateway", "parentId": "dom-api" },
+
+        { "type": "domain", "id": "dom-services", "x": 384, "y": 96, "width": 560, "height": 360, "title": "Core Services", "parentId": "sys-platform" },
+        { "type": "module", "id": "mod-orders", "x": 432, "y": 160, "width": 192, "height": 136, "title": "Orders", "parentId": "dom-services" },
+        { "type": "component", "id": "comp-order-svc", "x": 456, "y": 200, "width": 144, "height": 72, "title": "Order Service", "parentId": "mod-orders" },
+        { "type": "module", "id": "mod-catalog", "x": 648, "y": 160, "width": 192, "height": 136, "title": "Catalog", "parentId": "dom-services" },
+        { "type": "component", "id": "comp-catalog-svc", "x": 672, "y": 200, "width": 144, "height": 72, "title": "Catalog Service", "parentId": "mod-catalog" },
+        { "type": "module", "id": "mod-payments", "x": 432, "y": 328, "width": 192, "height": 112, "title": "Payments", "parentId": "dom-services" },
+        { "type": "component", "id": "comp-pay-svc", "x": 456, "y": 360, "width": 144, "height": 56, "title": "Payment Service", "parentId": "mod-payments" },
+        { "type": "module", "id": "mod-notif", "x": 648, "y": 328, "width": 192, "height": 112, "title": "Notifications", "parentId": "dom-services" },
+        { "type": "component", "id": "comp-notif-svc", "x": 672, "y": 360, "width": 144, "height": 56, "title": "Notif. Service", "parentId": "mod-notif" },
+
+        { "type": "domain", "id": "dom-data", "x": 80, "y": 496, "width": 864, "height": 180, "title": "Data & Messaging", "parentId": "sys-platform" },
+        { "type": "component", "id": "comp-bus", "x": 144, "y": 560, "width": 168, "height": 80, "title": "Message Bus", "description": "Kafka", "parentId": "dom-data" },
+        { "type": "component", "id": "comp-orders-db", "x": 384, "y": 560, "width": 168, "height": 80, "title": "Orders DB", "description": "PostgreSQL", "parentId": "dom-data" },
+        { "type": "component", "id": "comp-catalog-db", "x": 600, "y": 560, "width": 168, "height": 80, "title": "Catalog DB", "description": "MongoDB", "parentId": "dom-data" },
+        { "type": "component", "id": "comp-pay-db", "x": 816, "y": 560, "width": 144, "height": 80, "title": "Pay DB", "description": "PostgreSQL", "parentId": "dom-data" },
+
+        { "type": "user", "id": "user-client", "x": 32, "y": 224, "width": 80, "height": 80, "title": "Client" },
+
+        { "type": "port", "id": "port-gw-in", "x": 189, "y": 149, "width": 22, "height": 22, "title": "HTTPS", "portNumber": 443, "portColor": "#2563eb", "snappedToId": "comp-gw", "snappedSide": "top", "snappedOffset": 0.5 },
+        { "type": "port", "id": "port-gw-out", "x": 271, "y": 189, "width": 22, "height": 22, "title": "gRPC", "portColor": "#7c3aed", "snappedToId": "comp-gw", "snappedSide": "right", "snappedOffset": 0.5 }
+    ],
+    "connections": [
+        {
+            "id": "conn-user-gw",
+            "sourcePoint": { "x": 112, "y": 264, "componentId": "user-client", "side": "right", "offset": 0.5 },
+            "targetPoint": { "x": 200, "y": 160, "componentId": "port-gw-in", "side": "top", "offset": 0.5 }
+        },
+        {
+            "id": "conn-gw-orders",
+            "sourcePoint": { "x": 282, "y": 200, "componentId": "port-gw-out", "side": "right", "offset": 0.5 },
+            "targetPoint": { "x": 432, "y": 236, "componentId": "comp-order-svc", "side": "left", "offset": 0.5 }
+        },
+        {
+            "id": "conn-gw-catalog",
+            "sourcePoint": { "x": 282, "y": 200, "componentId": "port-gw-out", "side": "right", "offset": 0.5 },
+            "targetPoint": { "x": 672, "y": 236, "componentId": "comp-catalog-svc", "side": "left", "offset": 0.5 }
+        },
+        {
+            "id": "conn-orders-bus",
+            "sourcePoint": { "x": 528, "y": 272, "componentId": "comp-order-svc", "side": "bottom", "offset": 0.5 },
+            "targetPoint": { "x": 228, "y": 560, "componentId": "comp-bus", "side": "top", "offset": 0.5 },
+            "label": "order.created"
+        },
+        {
+            "id": "conn-bus-notif",
+            "sourcePoint": { "x": 312, "y": 600, "componentId": "comp-bus", "side": "right", "offset": 0.5 },
+            "targetPoint": { "x": 744, "y": 416, "componentId": "comp-notif-svc", "side": "bottom", "offset": 0.5 },
+            "label": "notify",
+            "lineStyle": "dashed"
+        },
+        {
+            "id": "conn-orders-pay",
+            "sourcePoint": { "x": 528, "y": 272, "componentId": "comp-order-svc", "side": "bottom", "offset": 0.5 },
+            "targetPoint": { "x": 528, "y": 360, "componentId": "comp-pay-svc", "side": "top", "offset": 0.5 },
+            "label": "charge"
+        },
+        {
+            "id": "conn-orders-db",
+            "sourcePoint": { "x": 528, "y": 440, "componentId": "comp-pay-svc", "side": "bottom", "offset": 0.5 },
+            "targetPoint": { "x": 468, "y": 560, "componentId": "comp-orders-db", "side": "top", "offset": 0.5 }
+        },
+        {
+            "id": "conn-catalog-db",
+            "sourcePoint": { "x": 744, "y": 272, "componentId": "comp-catalog-svc", "side": "bottom", "offset": 0.5 },
+            "targetPoint": { "x": 684, "y": 560, "componentId": "comp-catalog-db", "side": "top", "offset": 0.5 }
+        }
+    ]
+}

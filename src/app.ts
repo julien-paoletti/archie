@@ -7,6 +7,7 @@ import { Palette } from './palette.ts';
 import { Editor } from './editor.ts';
 import { GRID_SIZE } from './canvas/constants.ts';
 import { showAlert, showConfirm, showPrompt } from './modal.ts';
+import { DEMOS } from './demos.ts';
 
 // ============================================================================
 // Types
@@ -89,6 +90,9 @@ class ArchieApp {
 
         // Setup toolbar buttons
         this.setupToolbarButtons();
+
+        // Setup examples dropdown
+        this.setupExamplesDropdown();
 
         // Setup palette toggle
         this.setupPaletteToggle();
@@ -227,6 +231,45 @@ class ArchieApp {
         if (exportPngBtn) {
             exportPngBtn.addEventListener('click', blurAfter(() => this.editor?.exportPNG()));
         }
+    }
+
+    private setupExamplesDropdown(): void {
+        const select = document.getElementById('examples-select') as HTMLSelectElement | null;
+        if (!select) return;
+
+        for (const demo of DEMOS) {
+            const option = document.createElement('option');
+            option.value = demo.id;
+            option.textContent = demo.label;
+            select.appendChild(option);
+        }
+
+        select.addEventListener('change', async () => {
+            const id = select.value;
+            if (!id) return;
+
+            const demo = DEMOS.find(d => d.id === id);
+            if (!demo || !this.editor) return;
+
+            const hasElements = this.editor.toJSON().components.length > 0;
+            if (hasElements) {
+                const confirmed = await showConfirm(
+                    'Load Example',
+                    `Load "${demo.label}"? Any unsaved changes will be lost.`,
+                    'Load Example',
+                    true
+                );
+                if (!confirmed) {
+                    select.value = '';
+                    return;
+                }
+            }
+
+            this.editor.fromJSON(demo.diagram);
+            this.fileHandle = null;
+            this.showToast(`Loaded: ${demo.label}`);
+            select.value = '';
+        });
     }
 
     private setupPaletteToggle(): void {

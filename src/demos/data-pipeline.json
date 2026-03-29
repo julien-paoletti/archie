@@ -1,0 +1,75 @@
+{
+    "label": "Event-Driven Data Pipeline",
+    "viewport": { "scale": 0.85, "panX": 20, "panY": 20 },
+    "components": [
+        { "type": "module", "id": "mod-ingest", "x": 48, "y": 48, "width": 240, "height": 280, "title": "Ingestion" },
+        { "type": "component", "id": "comp-collector", "x": 96, "y": 112, "width": 144, "height": 72, "title": "Collector", "description": "HTTP / SDK", "parentId": "mod-ingest" },
+        { "type": "component", "id": "comp-validator", "x": 96, "y": 216, "width": 144, "height": 72, "title": "Validator", "description": "Schema check", "parentId": "mod-ingest" },
+
+        { "type": "module", "id": "mod-stream", "x": 360, "y": 48, "width": 240, "height": 280, "title": "Streaming" },
+        { "type": "component", "id": "comp-kafka", "x": 408, "y": 112, "width": 144, "height": 72, "title": "Kafka", "description": "Event broker", "parentId": "mod-stream" },
+        { "type": "component", "id": "comp-flink", "x": 408, "y": 216, "width": 144, "height": 72, "title": "Flink", "description": "Stream processor", "parentId": "mod-stream" },
+
+        { "type": "module", "id": "mod-storage", "x": 672, "y": 48, "width": 240, "height": 280, "title": "Storage" },
+        { "type": "component", "id": "comp-datalake", "x": 720, "y": 112, "width": 144, "height": 72, "title": "Data Lake", "description": "S3 / GCS", "parentId": "mod-storage" },
+        { "type": "component", "id": "comp-warehouse", "x": 720, "y": 216, "width": 144, "height": 72, "title": "Warehouse", "description": "BigQuery / Redshift", "parentId": "mod-storage" },
+
+        { "type": "domain", "id": "dom-serving", "x": 48, "y": 408, "width": 864, "height": 192, "title": "Serving" },
+        { "type": "component", "id": "comp-api-serve", "x": 120, "y": 472, "width": 168, "height": 80, "title": "Query API", "description": "REST / SQL", "parentId": "dom-serving" },
+        { "type": "component", "id": "comp-dashboard", "x": 360, "y": 472, "width": 168, "height": 80, "title": "Dashboard", "description": "BI / Grafana", "parentId": "dom-serving" },
+        { "type": "component", "id": "comp-ml", "x": 600, "y": 472, "width": 168, "height": 80, "title": "ML Models", "description": "Feature store", "parentId": "dom-serving" },
+
+        { "type": "user", "id": "user-analyst", "x": 204, "y": 572, "width": 72, "height": 72, "title": "Analyst" },
+
+        { "type": "port", "id": "port-kafka-in", "x": 469, "y": 101, "width": 22, "height": 22, "title": "events", "portNumber": 9092, "portColor": "#ea580c", "snappedToId": "comp-kafka", "snappedSide": "top", "snappedOffset": 0.5 },
+        { "type": "port", "id": "port-kafka-out", "x": 469, "y": 183, "width": 22, "height": 22, "title": "", "portColor": "#ea580c", "snappedToId": "comp-kafka", "snappedSide": "bottom", "snappedOffset": 0.5 },
+        { "type": "port", "id": "port-wh-out", "x": 781, "y": 287, "width": 22, "height": 22, "title": "SQL", "portColor": "#7c3aed", "snappedToId": "comp-warehouse", "snappedSide": "bottom", "snappedOffset": 0.5 }
+    ],
+    "connections": [
+        {
+            "id": "conn-collector-validator",
+            "sourcePoint": { "x": 168, "y": 184, "componentId": "comp-collector", "side": "bottom", "offset": 0.5 },
+            "targetPoint": { "x": 168, "y": 216, "componentId": "comp-validator", "side": "top", "offset": 0.5 }
+        },
+        {
+            "id": "conn-validator-kafka",
+            "sourcePoint": { "x": 240, "y": 252, "componentId": "comp-validator", "side": "right", "offset": 0.5 },
+            "targetPoint": { "x": 480, "y": 112, "componentId": "port-kafka-in", "side": "top", "offset": 0.5 },
+            "label": "validated events"
+        },
+        {
+            "id": "conn-kafka-flink",
+            "sourcePoint": { "x": 480, "y": 194, "componentId": "port-kafka-out", "side": "bottom", "offset": 0.5 },
+            "targetPoint": { "x": 480, "y": 216, "componentId": "comp-flink", "side": "top", "offset": 0.5 }
+        },
+        {
+            "id": "conn-flink-datalake",
+            "sourcePoint": { "x": 552, "y": 252, "componentId": "comp-flink", "side": "right", "offset": 0.5 },
+            "targetPoint": { "x": 720, "y": 148, "componentId": "comp-datalake", "side": "left", "offset": 0.5 },
+            "label": "raw events"
+        },
+        {
+            "id": "conn-flink-warehouse",
+            "sourcePoint": { "x": 552, "y": 252, "componentId": "comp-flink", "side": "right", "offset": 0.5 },
+            "targetPoint": { "x": 720, "y": 252, "componentId": "comp-warehouse", "side": "left", "offset": 0.5 },
+            "label": "aggregated"
+        },
+        {
+            "id": "conn-wh-api",
+            "sourcePoint": { "x": 792, "y": 298, "componentId": "port-wh-out", "side": "bottom", "offset": 0.5 },
+            "targetPoint": { "x": 204, "y": 472, "componentId": "comp-api-serve", "side": "top", "offset": 0.5 }
+        },
+        {
+            "id": "conn-wh-dashboard",
+            "sourcePoint": { "x": 792, "y": 298, "componentId": "port-wh-out", "side": "bottom", "offset": 0.5 },
+            "targetPoint": { "x": 444, "y": 472, "componentId": "comp-dashboard", "side": "top", "offset": 0.5 }
+        },
+        {
+            "id": "conn-datalake-ml",
+            "sourcePoint": { "x": 864, "y": 148, "componentId": "comp-datalake", "side": "right", "offset": 0.5 },
+            "targetPoint": { "x": 768, "y": 472, "componentId": "comp-ml", "side": "right", "offset": 0.5 },
+            "label": "training data",
+            "lineStyle": "dashed"
+        }
+    ]
+}

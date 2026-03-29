@@ -1,0 +1,54 @@
+{
+    "label": "Web Application",
+    "viewport": { "scale": 0.9, "panX": 20, "panY": 20 },
+    "components": [
+        { "type": "domain", "id": "dom-frontend", "x": 48, "y": 48, "width": 480, "height": 200, "title": "Frontend" },
+        { "type": "component", "id": "comp-browser", "x": 96, "y": 112, "width": 168, "height": 80, "title": "Browser", "description": "React SPA", "parentId": "dom-frontend" },
+        { "type": "component", "id": "comp-cdn", "x": 312, "y": 112, "width": 168, "height": 80, "title": "CDN", "description": "Static assets", "parentId": "dom-frontend" },
+
+        { "type": "domain", "id": "dom-backend", "x": 48, "y": 312, "width": 480, "height": 200, "title": "Backend" },
+        { "type": "component", "id": "comp-api", "x": 96, "y": 376, "width": 168, "height": 80, "title": "API Gateway", "description": "REST / GraphQL", "parentId": "dom-backend" },
+        { "type": "component", "id": "comp-auth", "x": 312, "y": 376, "width": 168, "height": 80, "title": "Auth Service", "description": "JWT / OAuth2", "parentId": "dom-backend" },
+
+        { "type": "domain", "id": "dom-data", "x": 48, "y": 576, "width": 480, "height": 200, "title": "Data" },
+        { "type": "component", "id": "comp-db", "x": 96, "y": 640, "width": 168, "height": 80, "title": "PostgreSQL", "description": "Primary database", "parentId": "dom-data" },
+        { "type": "component", "id": "comp-cache", "x": 312, "y": 640, "width": 168, "height": 80, "title": "Redis", "description": "Cache & sessions", "parentId": "dom-data" },
+
+        { "type": "port", "id": "port-browser-out", "x": 169, "y": 241, "width": 22, "height": 22, "title": "HTTPS", "portNumber": 443, "portColor": "#2563eb", "snappedToId": "comp-browser", "snappedSide": "bottom", "snappedOffset": 0.5 },
+        { "type": "port", "id": "port-api-in", "x": 169, "y": 345, "width": 22, "height": 22, "title": "HTTP", "portNumber": 80, "portColor": "#16a34a", "snappedToId": "comp-api", "snappedSide": "top", "snappedOffset": 0.5 },
+        { "type": "port", "id": "port-api-db", "x": 169, "y": 509, "width": 22, "height": 22, "title": "SQL", "portNumber": 5432, "portColor": "#7c3aed", "snappedToId": "comp-api", "snappedSide": "bottom", "snappedOffset": 0.5 },
+        { "type": "port", "id": "port-db-in", "x": 169, "y": 629, "width": 22, "height": 22, "title": "", "portColor": "#7c3aed", "snappedToId": "comp-db", "snappedSide": "top", "snappedOffset": 0.5 }
+    ],
+    "connections": [
+        {
+            "id": "conn-browser-api",
+            "sourcePoint": { "x": 180, "y": 252, "componentId": "port-browser-out", "side": "bottom", "offset": 0.5 },
+            "targetPoint": { "x": 180, "y": 356, "componentId": "port-api-in", "side": "top", "offset": 0.5 }
+        },
+        {
+            "id": "conn-api-auth",
+            "sourcePoint": { "x": 264, "y": 416, "componentId": "comp-api", "side": "right", "offset": 0.5 },
+            "targetPoint": { "x": 312, "y": 416, "componentId": "comp-auth", "side": "left", "offset": 0.5 },
+            "label": "verify token",
+            "lineStyle": "dashed"
+        },
+        {
+            "id": "conn-api-db",
+            "sourcePoint": { "x": 180, "y": 520, "componentId": "port-api-db", "side": "bottom", "offset": 0.5 },
+            "targetPoint": { "x": 180, "y": 640, "componentId": "port-db-in", "side": "top", "offset": 0.5 }
+        },
+        {
+            "id": "conn-api-cache",
+            "sourcePoint": { "x": 264, "y": 416, "componentId": "comp-api", "side": "right", "offset": 0.5 },
+            "targetPoint": { "x": 396, "y": 640, "componentId": "comp-cache", "side": "top", "offset": 0.5 },
+            "label": "read / write"
+        },
+        {
+            "id": "conn-cdn-browser",
+            "sourcePoint": { "x": 312, "y": 152, "componentId": "comp-cdn", "side": "left", "offset": 0.5 },
+            "targetPoint": { "x": 264, "y": 152, "componentId": "comp-browser", "side": "right", "offset": 0.5 },
+            "label": "assets",
+            "lineStyle": "dashed"
+        }
+    ]
+}
