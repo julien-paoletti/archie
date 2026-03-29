@@ -297,7 +297,7 @@ export abstract class ContainerElement extends DiagramElement {
 
         // Draw title at TOP
         if (!this.hideTitle) {
-            drawer.drawText(this.title, x + width / 2, y + this.titleHeight / 2 + 2, {
+            drawer.drawText(this.title, x + width / 2, y + this.titleHeight / 2 + 9, {
                 font: this.titleFont,
                 color: this.titleColor,
                 align: 'center',
