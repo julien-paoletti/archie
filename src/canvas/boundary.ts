@@ -37,12 +37,6 @@ export class Boundary extends DiagramElement {
 
         ctx.save();
 
-        // Draw background
-        /* ctx.beginPath();
-        ctx.roundRect(x, y, width, height, radius);
-        ctx.fillStyle = this.backgroundColor;
-        ctx.fill(); */
-
         // Draw dashed border
         ctx.beginPath();
         ctx.roundRect(x, y, width, height, radius);

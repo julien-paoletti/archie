@@ -15,13 +15,15 @@ export interface Demo {
     diagram: SerializedDiagram;
 }
 
-function toDemoEntry(id: string, raw: { label: string } & SerializedDiagram): Demo {
+type DemoFile = { label: string } & SerializedDiagram;
+
+function toDemoEntry(id: string, raw: DemoFile): Demo {
     const { label, ...diagram } = raw;
     return { id, label, diagram: diagram as SerializedDiagram };
 }
 
 export const DEMOS: Demo[] = [
-    toDemoEntry('web-application', webApplication as any),
-    toDemoEntry('microservices', microservices as any),
-    toDemoEntry('data-pipeline', dataPipeline as any),
+    toDemoEntry('web-application', webApplication as DemoFile),
+    toDemoEntry('microservices', microservices as DemoFile),
+    toDemoEntry('data-pipeline', dataPipeline as DemoFile),
 ];

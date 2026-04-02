@@ -117,4 +117,27 @@ bun run build   # Production build to docs/
 
 ## Backlog
 
-- [ ] add icons for all menu item in the contextual menu
+- [ ] add new elements:
+
+### Structural
+
+Database — cylinder shape, for datastores
+Queue / MessageBus — for async messaging / event streams
+Actor — distinct from User, for external systems/roles (often a stick figure variant or labeled box)
+ExternalSystem — a component that's outside your boundary (distinct styling, e.g., greyed out)
+
+### Annotations / Markers
+
+Milestone / Step — numbered sequence marker (different from NumberedDot, e.g., diamond or flag)
+Legend entry — for explaining colors/shapes
+
+### Infrastructure / Deployment
+
+Server / Node — physical or virtual machine
+Container (Docker-style) — deployment unit (distinct from the diagram container Module)
+Cloud / Region — cloud boundary shape
+
+### Interaction / Flow
+
+Decision — diamond shape for flow diagrams
+Process — rounded rectangle with distinct color for process flows

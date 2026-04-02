@@ -37,16 +37,12 @@ export function render(state: EditorState): void {
         connection.draw(state.ctx, state.elements);
     });
 
-    if (state.hoverConnectionPoint && !state.isConnecting && !state.isDraggingConnectionPoint) {
+    if (state.hoverConnectionPoint) {
         drawConnectionPoint(state.ctx, state.hoverConnectionPoint.point);
     }
 
     if (state.isConnecting && state.sourceConnectionPoint && state.mousePos) {
         drawConnectionInProgress(state);
-    }
-
-    if (state.isDraggingConnectionPoint && state.hoverConnectionPoint) {
-        drawConnectionPoint(state.ctx, state.hoverConnectionPoint.point);
     }
 
     if (state.isBoxSelecting && state.boxSelectStart && state.boxSelectCurrent) {

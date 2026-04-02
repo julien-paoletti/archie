@@ -106,9 +106,10 @@ export function resolveOverlapAtLevel(element: DiagramElement, allElements: Diag
 }
 
 export function updateSnappedPorts(elements: DiagramElement[], movedIds: Set<string>): void {
+    const elementMap = new Map(elements.map(e => [e.id, e]));
     for (const el of elements) {
         if (!(el instanceof Port) || !el.snappedToId || !movedIds.has(el.snappedToId)) continue;
-        const host = elements.find(e => e.id === el.snappedToId);
+        const host = elementMap.get(el.snappedToId);
         if (!host || !el.snappedSide || el.snappedOffset === null) continue;
         const pt = host.getPointOnBorder(el.snappedSide, el.snappedOffset);
         el.x = pt.x - el.width / 2;

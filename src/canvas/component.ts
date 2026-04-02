@@ -161,33 +161,23 @@ export class Component extends DiagramElement {
             ctx.stroke();
         }
 
-        // Check if component has description
         const hasDescription = this.description && this.description.length > 0;
 
-        // Draw icon and title (unless hidden for editing)
         if (!this.hideTitle) {
             const iconSize = 24;
             const hasIcon = this.icon && iconCache.has(this.icon, iconSize);
-            const gap = 8; // Gap between icon and title
-
-            // Calculate vertical offset when description exists or when editing description
+            const gap = 8;
             const titleOffset = (hasDescription || this.hideDescription) ? -10 : 0;
 
             if (hasIcon) {
-                // Calculate combined width of icon + gap + title
                 ctx.font = this.titleFont;
                 const textMetrics = ctx.measureText(this.title);
                 const textWidth = Math.min(textMetrics.width, width - iconSize - gap - 20);
                 const totalWidth = iconSize + gap + textWidth;
-
-                // Center the icon + title combination
                 const startX = x + (width - totalWidth) / 2;
                 const centerY = y + height / 2 + titleOffset;
 
-                // Draw icon
                 iconCache.draw(ctx, this.icon, startX, centerY - iconSize / 2, iconSize);
-
-                // Draw title next to icon
                 drawer.drawText(this.title, startX + iconSize + gap + textWidth / 2, centerY, {
                     font: this.titleFont,
                     color: this.titleColor,
@@ -196,7 +186,6 @@ export class Component extends DiagramElement {
                     maxWidth: width - iconSize - gap - 20
                 });
             } else {
-                // No icon, just draw centered title
                 drawer.drawText(this.title, x + width / 2, y + height / 2 + titleOffset, {
                     font: this.titleFont,
                     color: this.titleColor,
@@ -207,9 +196,7 @@ export class Component extends DiagramElement {
             }
         }
 
-        // Draw description (independent of title visibility)
         if (hasDescription && !this.hideDescription) {
-            // Draw description below title
             drawer.drawText(this.description, x + width / 2, y + height / 2 + 12, {
                 font: this.descriptionFont,
                 color: this.descriptionColor,
