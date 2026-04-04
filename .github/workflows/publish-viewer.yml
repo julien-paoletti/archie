@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 jobs:
   publish:
@@ -35,6 +36,7 @@ jobs:
         run: bun run build:viewer
 
       - name: Publish to npm
-        run: npm publish viewer --access public
+        working-directory: viewer
+        run: npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
