@@ -1,4 +1,4 @@
-# Publish @julien-paoletti/viewer to npm
+# Publish @julien-paoletti/viewer to GitHub Packages
 # Triggered by pushing a version tag: git tag v0.2.0 && git push --tags
 name: Publish Viewer
 
@@ -9,7 +9,7 @@ on:
 
 permissions:
   contents: read
-  id-token: write
+  packages: write
 
 jobs:
   publish:
@@ -27,7 +27,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: '20'
-          registry-url: 'https://registry.npmjs.org'
+          registry-url: 'https://npm.pkg.github.com'
 
       - name: Install dependencies
         run: bun install
@@ -35,8 +35,10 @@ jobs:
       - name: Build viewer
         run: bun run build:viewer
 
-      - name: Publish to npm
+      - name: Publish to GitHub Packages
         working-directory: viewer
-        run: npm publish --provenance --access public
+        run: |
+          echo "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}" > .npmrc
+          npm publish --access public
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

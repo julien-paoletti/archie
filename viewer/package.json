@@ -1,8 +1,9 @@
 {
   "name": "@julien-paoletti/archie-viewer",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Embeddable read-only viewer for Archie architecture diagrams",
   "type": "module",
+  "homepage": "https://github.com/julien-paoletti/archie#readme",
   "exports": {
     ".": {
       "import": "./dist/index.js",
@@ -29,6 +30,6 @@
     "url": "git+https://github.com/julien-paoletti/archie.git"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=24"
   }
 }
