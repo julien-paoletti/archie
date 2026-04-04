@@ -107,7 +107,7 @@ export class NumberedDot extends DiagramElement {
     /**
      * Get nearest border point for connections (on the circle edge)
      */
-    getNearestBorderPoint(px: number, py: number, threshold: number = CONNECTION_POINT_HITBOX): { point: { x: number; y: number }; side: 'top' | 'right' | 'bottom' | 'left'; offset: number } | null {
+    override getNearestBorderPoint(px: number, py: number, threshold: number = CONNECTION_POINT_HITBOX): { point: { x: number; y: number }; side: 'top' | 'right' | 'bottom' | 'left'; offset: number } | null {
         const centerX = this.x + this.width / 2;
         const centerY = this.y + this.height / 2;
         const radius = this.dotSize / 2;

@@ -141,7 +141,7 @@ export class Port extends DiagramElement {
 
     override resize(): void { }
 
-    getNearestBorderPoint(px: number, py: number, threshold: number = CONNECTION_POINT_HITBOX): { point: { x: number; y: number }; side: 'top' | 'right' | 'bottom' | 'left'; offset: number } | null {
+    override getNearestBorderPoint(px: number, py: number, threshold: number = CONNECTION_POINT_HITBOX): { point: { x: number; y: number }; side: 'top' | 'right' | 'bottom' | 'left'; offset: number } | null {
         const { x, y } = this;
         const s = PORT_SIZE;
         const inner = CONNECTION_POINT_INSIDE_MARGIN;

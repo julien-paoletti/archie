@@ -96,6 +96,26 @@ Made with ❤️ in Bordeaux
 | `Space+Drag` | Pan canvas |
 | `Mouse Wheel` | Zoom in/out |
 
+## Viewer
+
+Consumer usage
+
+```js
+import { ArchieViewer } from '@archie/viewer';
+import type { SerializedDiagram } from '@archie/viewer';
+
+const viewer = new ArchieViewer('my-canvas', { fitPadding: 40 });
+
+const diagram: SerializedDiagram = await fetch('/diagrams/infra.json').then(r => r.json());
+viewer.load(diagram);
+viewer.fitToContent();
+
+// cleanup when unmounting
+viewer.destroy();
+```
+
+The canvas just needs to exist in the DOM — no required wrapper divs. Panning works with middle-click or Alt+drag; zoom with Ctrl+wheel; scroll-to-pan with normal wheel. Call bun run build:viewer to produce the dist.
+
 ## Installation
 
 ```bash

@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "bun build src/app.ts --outdir=docs --watch",
     "build": "bun run scripts/build.ts",
+    "build:viewer": "bun run scripts/build-viewer.ts",
     "serve": "bun --bun run scripts/serve.ts"
   },
   "devDependencies": {

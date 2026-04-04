@@ -1,0 +1,34 @@
+{
+  "name": "@archie/viewer",
+  "version": "0.1.0",
+  "description": "Embeddable read-only viewer for Archie architecture diagrams",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/types/viewer/src/index.d.ts"
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/types/viewer/src/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "architecture",
+    "diagram",
+    "viewer",
+    "canvas",
+    "archie"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/archie"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

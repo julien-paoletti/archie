@@ -98,7 +98,7 @@ export class Tag extends DiagramElement {
     override resize(): void {}
 
     /** Tags don't have connection points */
-    getNearestBorderPoint(): null {
+    override getNearestBorderPoint(): null {
         return null;
     }
 
