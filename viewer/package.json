@@ -1,6 +1,6 @@
 {
   "name": "@julien-paoletti/archie-viewer",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Embeddable read-only viewer for Archie architecture diagrams",
   "type": "module",
   "exports": {
@@ -26,7 +26,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/julien-paoletti/archie"
+    "url": "git+https://github.com/julien-paoletti/archie.git"
   },
   "engines": {
     "node": ">=18"

@@ -22,20 +22,19 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Install dependencies
-        run: bun install
-
-      - name: Build viewer
-        run: bun run build:viewer
-
       - name: Setup Node for npm publish
         uses: actions/setup-node@v6
         with:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
 
+      - name: Install dependencies
+        run: bun install
+
+      - name: Build viewer
+        run: bun run build:viewer
+
       - name: Publish to npm
-        working-directory: viewer
-        run: npm publish --access public
+        run: npm publish viewer --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
