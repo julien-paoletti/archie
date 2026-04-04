@@ -1,4 +1,4 @@
-# Publish @archie/viewer to npm
+# Publish @julien-paoletti/viewer to npm
 # Triggered by pushing a version tag: git tag v0.2.0 && git push --tags
 name: Publish Viewer
 
@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -29,7 +29,7 @@ jobs:
         run: bun run build:viewer
 
       - name: Setup Node for npm publish
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'

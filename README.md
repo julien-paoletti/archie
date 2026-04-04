@@ -116,6 +116,17 @@ viewer.destroy();
 
 The canvas just needs to exist in the DOM — no required wrapper divs. Panning works with middle-click or Alt+drag; zoom with Ctrl+wheel; scroll-to-pan with normal wheel. Call bun run build:viewer to produce the dist.
 
+### Release flow
+
+bump version in viewer/package.json, then:
+
+```bash
+git add viewer/package.json
+git commit -m "chore: bump @archie/viewer to 0.2.0"
+git tag v0.2.0
+git push && git push --tags
+```
+
 ## Installation
 
 ```bash
