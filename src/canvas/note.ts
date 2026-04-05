@@ -179,99 +179,66 @@ export class Note extends DiagramElement {
     draw(ctx: CanvasRenderingContext2D): void {
         ctx.save();
 
-        // Draw shadow for paper effect
         ctx.shadowColor = 'rgba(0, 0, 0, 0.12)';
         ctx.shadowBlur = 8;
         ctx.shadowOffsetX = 2;
         ctx.shadowOffsetY = 3;
-
-        // Draw paper background
         ctx.fillStyle = this.backgroundColor;
         ctx.fillRect(this.x, this.y, this.width, this.height);
 
-        // Reset shadow
         ctx.shadowColor = 'transparent';
         ctx.shadowBlur = 0;
         ctx.shadowOffsetX = 0;
         ctx.shadowOffsetY = 0;
 
-        // Draw subtle left accent stripe
         ctx.fillStyle = this.accentColor;
         ctx.fillRect(this.x, this.y, 4, this.height);
 
-        // Draw light border
         ctx.strokeStyle = this.selected ? '#3B82F6' : this.hovered ? '#93C5FD' : this.borderColor;
         ctx.lineWidth = this.selected ? 2 : 1;
         ctx.strokeRect(this.x, this.y, this.width, this.height);
 
-        // Draw text if not hidden
+        const iconSize = 16;
+        const isTop = this.noteIconPosition === 'top-left' || this.noteIconPosition === 'top-right';
+        const isLeft = this.noteIconPosition === 'top-left' || this.noteIconPosition === 'bottom-left';
+
         if (!this.hideText) {
             ctx.font = `${this.fontSize}px ${this.fontFamily}`;
             ctx.fillStyle = this.textColor;
             ctx.textBaseline = 'top';
 
-            // Reserve space for the icon so text never overlaps it.
-            // icon occupies (iconSize + gap) on its corner axes.
-            const iconSize = 16;
+            // Reserve (iconSize + gap) on the icon's corner axes so text never overlaps it
             const iconReserve = this.noteIcon ? iconSize + 4 : 0;
-            const isTop = this.noteIconPosition === 'top-left' || this.noteIconPosition === 'top-right';
-            const isLeft = this.noteIconPosition === 'top-left' || this.noteIconPosition === 'bottom-left';
-
             const textX = this.x + this.padding + (isLeft ? iconReserve : 0);
             const maxWidth = this.width - this.padding * 2 - iconReserve;
             const textYStart = this.y + this.padding + (isTop ? iconReserve : 0);
             const textYEnd = this.y + this.height - this.padding - (isTop ? 0 : iconReserve);
 
             const lines = this.wrapText(ctx, this.text, maxWidth);
-            const lineHeightPx = this.fontSize * this.lineHeight;
-
             let yPos = textYStart;
             for (const line of lines) {
                 if (yPos + this.fontSize > textYEnd) break;
-
                 if (!line.isLastInParagraph && line.text.includes(' ')) {
                     this.drawJustifiedLine(ctx, line.text, textX, yPos, maxWidth);
                 } else {
                     ctx.fillText(line.text, textX, yPos, maxWidth);
                 }
-                yPos += lineHeightPx;
+                yPos += this.lineHeightPx;
             }
         }
 
-        // Draw note icon
-        if (!this.noteIcon) {
-            ctx.restore();
-            this.drawResizeHandles(ctx);
-            return;
-        }
-        const iconSize = 16;
-        const iconPad = this.padding;
-        let iconX: number;
-        let iconY: number;
-        if (this.noteIconPosition === 'top-right') {
-            iconX = this.x + this.width - iconPad - iconSize;
-            iconY = this.y + iconPad;
-        } else if (this.noteIconPosition === 'bottom-left') {
-            iconX = this.x + iconPad;
-            iconY = this.y + this.height - iconPad - iconSize;
-        } else if (this.noteIconPosition === 'bottom-right') {
-            iconX = this.x + this.width - iconPad - iconSize;
-            iconY = this.y + this.height - iconPad - iconSize;
-        } else {
-            iconX = this.x + iconPad;
-            iconY = this.y + iconPad;
-        }
-
-        const bitmap = iconCache.get(this.noteIcon, iconSize, this.accentColor);
-        if (bitmap) {
-            ctx.drawImage(bitmap, iconX, iconY, iconSize, iconSize);
-        } else {
-            this.ensureIconCached();
+        if (this.noteIcon) {
+            const iconX = isLeft ? this.x + this.padding : this.x + this.width - this.padding - iconSize;
+            const iconY = isTop ? this.y + this.padding : this.y + this.height - this.padding - iconSize;
+            const bitmap = iconCache.get(this.noteIcon, iconSize, this.accentColor);
+            if (bitmap) {
+                ctx.drawImage(bitmap, iconX, iconY, iconSize, iconSize);
+            } else {
+                this.ensureIconCached();
+            }
         }
 
         ctx.restore();
-
-        // Draw resize handles when selected (uses inherited method)
         this.drawResizeHandles(ctx);
     }
 
