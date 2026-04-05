@@ -434,6 +434,39 @@ body {
     box-shadow: 0 0 0 1px white inset;
 }
 
+.context-menu-icon-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 4px;
+    padding: 6px 8px;
+}
+
+.icon-grid-cell {
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    border: 1.5px solid transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-size: 16px;
+    transition: all 0.1s ease;
+}
+
+.icon-grid-cell:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+.icon-grid-cell.active {
+    background: #ede9fe;
+    color: #7c3aed;
+    border-color: #7c3aed;
+}
+
 /* Toast notifications */
 .toast-container {
     position: fixed;

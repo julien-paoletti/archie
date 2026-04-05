@@ -32,7 +32,7 @@ export { Port, PORT_SIZE, PORT_SNAP_THRESHOLD } from './port';
 export { Connection, getControlPoint, controlDistance, distance } from './connection';
 
 // Icons
-export { IconCache, iconCache, TABLER_ICONS, getAvailableIcons, preloadIcons } from './iconCache';
+export { IconCache, iconCache, TABLER_ICONS, NOTE_ICONS, getAvailableIcons, preloadIcons } from './iconCache';
 
 // Registry
 export { ElementRegistry, elementRegistry } from './registry';

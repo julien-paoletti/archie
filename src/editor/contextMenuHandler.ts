@@ -4,7 +4,7 @@
  */
 
 import type { DiagramElement, Connection, Point, LineStyle, ArrowType, CurveType } from '../canvas/index';
-import { Boundary, Component, Domain, Label, Module, Note, Port, System, Tag, User, COLOR_PALETTE, NOTE_COLORS, TAG_COLORS } from '../canvas/index';
+import { Boundary, Component, Domain, Label, Module, Note, Port, System, Tag, User, COLOR_PALETTE, NOTE_COLORS, NOTE_ICONS, TAG_COLORS } from '../canvas/index';
 
 export interface ContextMenuItem {
     icon?: string;
@@ -14,6 +14,7 @@ export interface ContextMenuItem {
     danger?: boolean;
     disabled?: boolean;
     colorPalette?: { colors: readonly string[]; current: string; onSelect: (color: string) => void };
+    iconGrid?: { icons: readonly string[]; current: string; onSelect: (icon: string) => void };
 }
 
 export interface ContextMenuState {
@@ -37,6 +38,8 @@ export interface ContextMenuCallbacks {
     changeConnectionCurveType: (connection: Connection, type: CurveType) => void;
     changeBorderColor: (element: DiagramElement, color: string) => void;
     changeNoteColor: (note: Note, bgColor: string, textColor: string, accentColor: string, borderColor: string) => void;
+    changeNoteIcon: (note: Note, icon: string) => void;
+    changeNoteIconPosition: (note: Note, position: string) => void;
     changeTagColor: (tag: Tag, bgColor: string, textColor: string) => void;
     changeConnectionStrokeColor: (connection: Connection, color: string) => void;
     changeFontSize: (element: Label | Note, delta: number) => void;
@@ -305,7 +308,7 @@ export class ContextMenuHandler {
             });
         }
 
-        // Note color palette
+        // Note color palette, icon picker, and icon position
         if (element instanceof Note) {
             items.push({ separator: true });
             items.push({
@@ -320,6 +323,37 @@ export class ContextMenuHandler {
                     }
                 }
             });
+            items.push({ separator: true });
+            items.push({
+                iconGrid: {
+                    icons: NOTE_ICONS,
+                    current: element.noteIcon,
+                    onSelect: (icon) => this.callbacks.changeNoteIcon(element, icon)
+                }
+            });
+            if (element.noteIcon) {
+                items.push({
+                    icon: 'x',
+                    label: 'Remove Icon',
+                    action: () => this.callbacks.changeNoteIcon(element, '')
+                });
+            }
+            items.push({ separator: true });
+            const positions = [
+                { value: 'top-left', label: 'Top Left', icon: 'arrow-up-left' },
+                { value: 'top-right', label: 'Top Right', icon: 'arrow-up-right' },
+                { value: 'bottom-left', label: 'Bottom Left', icon: 'arrow-down-left' },
+                { value: 'bottom-right', label: 'Bottom Right', icon: 'arrow-down-right' },
+            ];
+            for (const pos of positions) {
+                const active = pos.value === element.noteIconPosition;
+                items.push({
+                    icon: pos.icon,
+                    label: `Icon ${pos.label}`,
+                    disabled: active,
+                    action: active ? undefined : () => this.callbacks.changeNoteIconPosition(element, pos.value)
+                });
+            }
         }
 
         // Label position option (only for Boundary type)
@@ -445,6 +479,24 @@ export class ContextMenuHandler {
                         this.hide();
                     });
                     row.appendChild(swatch);
+                }
+                this.menuItems.appendChild(row);
+            } else if (item.iconGrid) {
+                const grid = item.iconGrid;
+                const row = document.createElement('div');
+                row.className = 'context-menu-icon-grid';
+                for (const iconName of grid.icons) {
+                    const cell = document.createElement('div');
+                    cell.className = 'icon-grid-cell' + (iconName === grid.current ? ' active' : '');
+                    cell.title = iconName;
+                    const icon = document.createElement('i');
+                    icon.className = `ti ti-${iconName}`;
+                    cell.appendChild(icon);
+                    cell.addEventListener('click', () => {
+                        grid.onSelect(iconName);
+                        this.hide();
+                    });
+                    row.appendChild(cell);
                 }
                 this.menuItems.appendChild(row);
             } else {

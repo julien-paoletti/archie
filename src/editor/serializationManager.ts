@@ -139,6 +139,8 @@ export class SerializationManager {
                     if (c.textColor !== '#5D4E37') base.textColor = c.textColor;
                     if (c.accentColor !== '#F6E05E') base.accentColor = c.accentColor;
                     if (c.borderColor !== '#E8DFC0') base.noteBorderColor = c.borderColor;
+                    if (c.noteIcon !== 'info-circle') base.noteIcon = c.noteIcon;
+                    if (c.noteIconPosition !== 'top-left') base.noteIconPosition = c.noteIconPosition;
                 }
                 if (c instanceof NumberedDot) {
                     base.number = c.number;

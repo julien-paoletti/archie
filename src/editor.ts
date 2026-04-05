@@ -152,6 +152,18 @@ export class Editor {
                 this.saveToStorage();
                 this.render();
             },
+            changeNoteIcon: (note, icon) => {
+                this.saveState();
+                note.noteIcon = icon;
+                this.saveToStorage();
+                this.render();
+            },
+            changeNoteIconPosition: (note, position) => {
+                this.saveState();
+                note.noteIconPosition = position as any;
+                this.saveToStorage();
+                this.render();
+            },
             changeNoteColor: (note, bgColor, textColor, accentColor, borderColor) => {
                 this.saveState();
                 note.backgroundColor = bgColor;

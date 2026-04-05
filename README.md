@@ -101,8 +101,8 @@ Made with ❤️ in Bordeaux
 Consumer usage
 
 ```js
-import { ArchieViewer } from '@archie/viewer';
-import type { SerializedDiagram } from '@archie/viewer';
+import { ArchieViewer } from '@julien-paoletti/viewer';
+import type { SerializedDiagram } from '@julien-paoletti/viewer';
 
 const viewer = new ArchieViewer('my-canvas', { fitPadding: 40 });
 

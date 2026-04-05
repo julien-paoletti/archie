@@ -4,7 +4,8 @@
  */
 
 import { DiagramElement } from './diagramElement';
-import type { DiagramElementOptions, ResizeHandle } from './types';
+import { iconCache, TABLER_ICONS } from './iconCache';
+import type { DiagramElementOptions, LabelPosition, ResizeHandle } from './types';
 
 export interface NoteOptions extends DiagramElementOptions {
     text?: string;
@@ -17,6 +18,8 @@ export interface NoteOptions extends DiagramElementOptions {
     noteBorderColor?: string;
     padding?: number;
     lineHeight?: number;
+    noteIcon?: string;
+    noteIconPosition?: LabelPosition;
 }
 
 export class Note extends DiagramElement {
@@ -29,6 +32,8 @@ export class Note extends DiagramElement {
     public borderColor: string;
     public padding: number;
     public lineHeight: number;
+    public noteIcon: string;
+    public noteIconPosition: LabelPosition;
     public hideText: boolean = false;
 
     constructor(options: NoteOptions = {}) {
@@ -42,10 +47,14 @@ export class Note extends DiagramElement {
         this.borderColor = options.borderColor ?? options.noteBorderColor ?? '#E8DFC0';
         this.padding = options.padding ?? 8;
         this.lineHeight = options.lineHeight ?? 1.5;
+        this.noteIcon = options.noteIcon ?? 'info-circle';
+        this.noteIconPosition = options.noteIconPosition ?? 'top-left';
 
         // Set default size for note elements
         if (!options.width) this.width = 200;
         if (!options.height) this.height = 100;
+
+        this.ensureIconCached();
     }
 
     /** Line height in pixels */
@@ -159,6 +168,14 @@ export class Note extends DiagramElement {
         }
     }
 
+    private ensureIconCached(): void {
+        if (!this.noteIcon) return;
+        const svg = TABLER_ICONS[this.noteIcon];
+        if (svg && !iconCache.has(this.noteIcon, 16, this.accentColor)) {
+            iconCache.loadIcon(this.noteIcon, svg, 16, this.accentColor);
+        }
+    }
+
     draw(ctx: CanvasRenderingContext2D): void {
         ctx.save();
 
@@ -193,24 +210,63 @@ export class Note extends DiagramElement {
             ctx.fillStyle = this.textColor;
             ctx.textBaseline = 'top';
 
-            const maxWidth = this.width - this.padding * 2;
+            // Reserve space for the icon so text never overlaps it.
+            // icon occupies (iconSize + gap) on its corner axes.
+            const iconSize = 16;
+            const iconReserve = this.noteIcon ? iconSize + 4 : 0;
+            const isTop = this.noteIconPosition === 'top-left' || this.noteIconPosition === 'top-right';
+            const isLeft = this.noteIconPosition === 'top-left' || this.noteIconPosition === 'bottom-left';
+
+            const textX = this.x + this.padding + (isLeft ? iconReserve : 0);
+            const maxWidth = this.width - this.padding * 2 - iconReserve;
+            const textYStart = this.y + this.padding + (isTop ? iconReserve : 0);
+            const textYEnd = this.y + this.height - this.padding - (isTop ? 0 : iconReserve);
+
             const lines = this.wrapText(ctx, this.text, maxWidth);
             const lineHeightPx = this.fontSize * this.lineHeight;
 
-            let yPos = this.y + this.padding;
+            let yPos = textYStart;
             for (const line of lines) {
-                // Stop drawing if we've exceeded the height
-                if (yPos + this.fontSize > this.y + this.height - this.padding) {
-                    break;
-                }
+                if (yPos + this.fontSize > textYEnd) break;
 
                 if (!line.isLastInParagraph && line.text.includes(' ')) {
-                    this.drawJustifiedLine(ctx, line.text, this.x + this.padding, yPos, maxWidth);
+                    this.drawJustifiedLine(ctx, line.text, textX, yPos, maxWidth);
                 } else {
-                    ctx.fillText(line.text, this.x + this.padding, yPos, maxWidth);
+                    ctx.fillText(line.text, textX, yPos, maxWidth);
                 }
                 yPos += lineHeightPx;
             }
+        }
+
+        // Draw note icon
+        if (!this.noteIcon) {
+            ctx.restore();
+            this.drawResizeHandles(ctx);
+            return;
+        }
+        const iconSize = 16;
+        const iconPad = this.padding;
+        let iconX: number;
+        let iconY: number;
+        if (this.noteIconPosition === 'top-right') {
+            iconX = this.x + this.width - iconPad - iconSize;
+            iconY = this.y + iconPad;
+        } else if (this.noteIconPosition === 'bottom-left') {
+            iconX = this.x + iconPad;
+            iconY = this.y + this.height - iconPad - iconSize;
+        } else if (this.noteIconPosition === 'bottom-right') {
+            iconX = this.x + this.width - iconPad - iconSize;
+            iconY = this.y + this.height - iconPad - iconSize;
+        } else {
+            iconX = this.x + iconPad;
+            iconY = this.y + iconPad;
+        }
+
+        const bitmap = iconCache.get(this.noteIcon, iconSize, this.accentColor);
+        if (bitmap) {
+            ctx.drawImage(bitmap, iconX, iconY, iconSize, iconSize);
+        } else {
+            this.ensureIconCached();
         }
 
         ctx.restore();
@@ -240,7 +296,9 @@ export class Note extends DiagramElement {
             accentColor: this.accentColor,
             borderColor: this.borderColor,
             padding: this.padding,
-            lineHeight: this.lineHeight
+            lineHeight: this.lineHeight,
+            noteIcon: this.noteIcon,
+            noteIconPosition: this.noteIconPosition,
         });
     }
 
