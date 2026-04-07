@@ -477,7 +477,7 @@ body {
 /* Toast notifications */
 .toast-container {
     position: fixed;
-    bottom: 1.5rem;
+    top: 4.5rem;
     right: 1.5rem;
     z-index: 10000;
     display: flex;
@@ -493,8 +493,12 @@ body {
     background: #1e293b;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(-8px);
     animation: toast-in 0.2s ease forwards;
+}
+
+.toast.toast-error {
+    background: #dc2626;
 }
 
 .toast.toast-out {
@@ -511,7 +515,7 @@ body {
 @keyframes toast-out {
     to {
         opacity: 0;
-        transform: translateY(8px);
+        transform: translateY(-8px);
     }
 }
 

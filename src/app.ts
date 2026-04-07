@@ -293,12 +293,12 @@ class ArchieApp {
         });
     }
 
-    private showToast(message: string, duration = 2000): void {
+    private showToast(message: string, duration = 2000, type: 'default' | 'error' = 'default'): void {
         const container = document.getElementById('toast-container');
         if (!container) return;
 
         const toast = document.createElement('div');
-        toast.className = 'toast';
+        toast.className = type === 'error' ? 'toast toast-error' : 'toast';
         toast.textContent = message;
         container.appendChild(toast);
 
@@ -334,9 +334,9 @@ class ArchieApp {
                 this.showToast(`Saved to ${handle.name}`);
                 return;
             } catch (err) {
-                // User cancelled or error occurred
                 if (err instanceof Error && err.name !== 'AbortError') {
                     console.error('Failed to save file:', err);
+                    this.showToast('Failed to save file', 3000, 'error');
                 }
                 return;
             }
@@ -380,12 +380,14 @@ class ArchieApp {
                 const handle = handles[0];
                 if (!handle) return;
 
+                const permission = await (handle as any).requestPermission({ mode: 'readwrite' });
+                if (permission !== 'granted') return;
+
                 const file = await handle.getFile();
                 const text = await file.text();
                 const data = JSON.parse(text);
 
                 this.editor.fromJSON(data);
-                this.editor.render();
                 this.fileHandle = handle;
 
                 this.showToast(`Opened ${handle.name}`);
@@ -414,7 +416,6 @@ class ArchieApp {
                 const data = JSON.parse(text);
 
                 this.editor!.fromJSON(data);
-                this.editor!.render();
 
                 this.showToast(`Opened ${file.name}`);
             } catch (err) {
@@ -446,7 +447,6 @@ class ArchieApp {
         // Clear the diagram
         this.editor.clearAll();
         this.fileHandle = null;
-        console.log('New diagram created');
     }
 }
 
