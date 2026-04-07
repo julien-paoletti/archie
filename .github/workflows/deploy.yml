@@ -3,7 +3,7 @@ name: Deploy
 
 on:
   push:
-    branches: [main]
+    branches: [trunk]
   workflow_dispatch:
 
 permissions:
@@ -32,9 +32,6 @@ jobs:
 
       - name: Build
         run: bun run build
-
-      - name: Disable Jekyll for pages
-        run: touch docs/.nojekyll
 
       - name: Setup Pages
         uses: actions/configure-pages@v6
