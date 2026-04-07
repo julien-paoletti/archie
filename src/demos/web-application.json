@@ -219,28 +219,6 @@
     },
     {
       "type": "numbered-dot",
-      "id": "comp_1775584350826_ji69cyawk",
-      "x": 2054.7201265764143,
-      "y": 1463.7877716758303,
-      "width": 32,
-      "height": 32,
-      "title": "Element",
-      "parentId": null,
-      "number": 2
-    },
-    {
-      "type": "numbered-dot",
-      "id": "comp_1775584364238_qua0dvuuk",
-      "x": 2430.0235481859404,
-      "y": 1462.9718946723312,
-      "width": 32,
-      "height": 32,
-      "title": "Element",
-      "parentId": null,
-      "number": 4
-    },
-    {
-      "type": "numbered-dot",
       "id": "comp_1775584357152_0ao0vre7t",
       "x": 2212.1843882517155,
       "y": 1394.4382263784178,
@@ -271,6 +249,28 @@
       "title": "Element",
       "parentId": null,
       "text": "TLS endpoint and load balancer with high availability"
+    },
+    {
+      "type": "numbered-dot",
+      "id": "comp_1775584364238_qua0dvuuk",
+      "x": 2441.6905893106878,
+      "y": 1462.9718946723312,
+      "width": 32,
+      "height": 32,
+      "title": "Element",
+      "parentId": null,
+      "number": 4
+    },
+    {
+      "type": "numbered-dot",
+      "id": "comp_1775584350826_ji69cyawk",
+      "x": 2045.7454795573776,
+      "y": 1464.685236377734,
+      "width": 32,
+      "height": 32,
+      "title": "Element",
+      "parentId": null,
+      "number": 2
     }
   ],
   "connections": [
@@ -421,6 +421,28 @@
         "componentId": "comp_1775583903571_13z1aq0yg",
         "side": "bottom",
         "offset": 0.5
+      },
+      "strokeColor": "#64748B",
+      "strokeWidth": 2,
+      "label": "",
+      "lineStyle": "solid",
+      "arrowType": "filled"
+    },
+    {
+      "id": "conn_1775589017556_txl8mnh4k",
+      "sourcePoint": {
+        "x": 2360,
+        "y": 1620,
+        "componentId": "comp_1775583873725_r1noba9zb",
+        "side": "right",
+        "offset": 0.5
+      },
+      "targetPoint": {
+        "x": 2520,
+        "y": 1494.6484376040587,
+        "componentId": "comp_1775571567202_tnxxydwog",
+        "side": "left",
+        "offset": 0.6831054700507337
       },
       "strokeColor": "#64748B",
       "strokeWidth": 2,
