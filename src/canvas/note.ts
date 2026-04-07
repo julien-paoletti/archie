@@ -47,7 +47,7 @@ export class Note extends DiagramElement {
         this.borderColor = options.borderColor ?? options.noteBorderColor ?? '#E8DFC0';
         this.padding = options.padding ?? 8;
         this.lineHeight = options.lineHeight ?? 1.5;
-        this.noteIcon = options.noteIcon ?? 'info-circle';
+        this.noteIcon = options.noteIcon ?? '';
         this.noteIconPosition = options.noteIconPosition ?? 'top-left';
 
         // Set default size for note elements
