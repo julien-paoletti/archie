@@ -26,7 +26,7 @@ export declare class ArchieViewer {
     private panStart;
     private readonly abortController;
     private readonly resizeObserver;
-    constructor(canvasId: string, options?: ViewerOptions);
+    constructor(canvasIdOrEl: string | HTMLCanvasElement, options?: ViewerOptions);
     /**
      * Load and display a diagram from a SerializedDiagram object (Archie JSON).
      */

@@ -126,7 +126,7 @@ export class ArchieViewer {
     private readonly resizeObserver: ResizeObserver;
 
     constructor(canvasId: string, options: ViewerOptions = {}) {
-        const canvas = document.getElementById(canvasId) as HTMLCanvasElement | null;
+        const canvas = typeof canvasId === 'string' ? document.getElementById(canvasId) as HTMLCanvasElement : null;
         if (!canvas) throw new Error(`Canvas element "${canvasId}" not found`);
 
         this.canvas = canvas;
