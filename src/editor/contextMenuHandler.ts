@@ -105,19 +105,16 @@ export class ContextMenuHandler {
             this.buildElementMenu(target);
         }
 
-        // Position and show menu
+        // Position and show menu, then clamp within the viewport
         this.contextMenu.style.left = `${x}px`;
         this.contextMenu.style.top = `${y}px`;
         this.contextMenu.style.display = 'block';
 
-        // Adjust position if menu goes off screen
         const menuRect = this.contextMenu.getBoundingClientRect();
-        if (menuRect.right > window.innerWidth) {
-            this.contextMenu.style.left = `${x - menuRect.width}px`;
-        }
-        if (menuRect.bottom > window.innerHeight) {
-            this.contextMenu.style.top = `${y - menuRect.height}px`;
-        }
+        const clampedLeft = Math.max(0, Math.min(x, window.innerWidth - menuRect.width));
+        const clampedTop = Math.max(0, Math.min(y, window.innerHeight - menuRect.height));
+        this.contextMenu.style.left = `${clampedLeft}px`;
+        this.contextMenu.style.top = `${clampedTop}px`;
     }
 
     hide(): void {
