@@ -1,54 +1,431 @@
 {
-    "label": "Web Application",
-    "viewport": { "scale": 0.9, "panX": 20, "panY": 20 },
-    "components": [
-        { "type": "domain", "id": "dom-frontend", "x": 48, "y": 48, "width": 480, "height": 200, "title": "Frontend" },
-        { "type": "component", "id": "comp-browser", "x": 96, "y": 112, "width": 168, "height": 80, "title": "Browser", "description": "React SPA", "parentId": "dom-frontend" },
-        { "type": "component", "id": "comp-cdn", "x": 312, "y": 112, "width": 168, "height": 80, "title": "CDN", "description": "Static assets", "parentId": "dom-frontend" },
-
-        { "type": "domain", "id": "dom-backend", "x": 48, "y": 312, "width": 480, "height": 200, "title": "Backend" },
-        { "type": "component", "id": "comp-api", "x": 96, "y": 376, "width": 168, "height": 80, "title": "API Gateway", "description": "REST / GraphQL", "parentId": "dom-backend" },
-        { "type": "component", "id": "comp-auth", "x": 312, "y": 376, "width": 168, "height": 80, "title": "Auth Service", "description": "JWT / OAuth2", "parentId": "dom-backend" },
-
-        { "type": "domain", "id": "dom-data", "x": 48, "y": 576, "width": 480, "height": 200, "title": "Data" },
-        { "type": "component", "id": "comp-db", "x": 96, "y": 640, "width": 168, "height": 80, "title": "PostgreSQL", "description": "Primary database", "parentId": "dom-data" },
-        { "type": "component", "id": "comp-cache", "x": 312, "y": 640, "width": 168, "height": 80, "title": "Redis", "description": "Cache & sessions", "parentId": "dom-data" },
-
-        { "type": "port", "id": "port-browser-out", "x": 169, "y": 241, "width": 22, "height": 22, "title": "HTTPS", "portNumber": 443, "portColor": "#2563eb", "snappedToId": "comp-browser", "snappedSide": "bottom", "snappedOffset": 0.5 },
-        { "type": "port", "id": "port-api-in", "x": 169, "y": 345, "width": 22, "height": 22, "title": "HTTP", "portNumber": 80, "portColor": "#16a34a", "snappedToId": "comp-api", "snappedSide": "top", "snappedOffset": 0.5 },
-        { "type": "port", "id": "port-api-db", "x": 169, "y": 509, "width": 22, "height": 22, "title": "SQL", "portNumber": 5432, "portColor": "#7c3aed", "snappedToId": "comp-api", "snappedSide": "bottom", "snappedOffset": 0.5 },
-        { "type": "port", "id": "port-db-in", "x": 169, "y": 629, "width": 22, "height": 22, "title": "", "portColor": "#7c3aed", "snappedToId": "comp-db", "snappedSide": "top", "snappedOffset": 0.5 }
-    ],
-    "connections": [
-        {
-            "id": "conn-browser-api",
-            "sourcePoint": { "x": 180, "y": 252, "componentId": "port-browser-out", "side": "bottom", "offset": 0.5 },
-            "targetPoint": { "x": 180, "y": 356, "componentId": "port-api-in", "side": "top", "offset": 0.5 }
-        },
-        {
-            "id": "conn-api-auth",
-            "sourcePoint": { "x": 264, "y": 416, "componentId": "comp-api", "side": "right", "offset": 0.5 },
-            "targetPoint": { "x": 312, "y": 416, "componentId": "comp-auth", "side": "left", "offset": 0.5 },
-            "label": "verify token",
-            "lineStyle": "dashed"
-        },
-        {
-            "id": "conn-api-db",
-            "sourcePoint": { "x": 180, "y": 520, "componentId": "port-api-db", "side": "bottom", "offset": 0.5 },
-            "targetPoint": { "x": 180, "y": 640, "componentId": "port-db-in", "side": "top", "offset": 0.5 }
-        },
-        {
-            "id": "conn-api-cache",
-            "sourcePoint": { "x": 264, "y": 416, "componentId": "comp-api", "side": "right", "offset": 0.5 },
-            "targetPoint": { "x": 396, "y": 640, "componentId": "comp-cache", "side": "top", "offset": 0.5 },
-            "label": "read / write"
-        },
-        {
-            "id": "conn-cdn-browser",
-            "sourcePoint": { "x": 312, "y": 152, "componentId": "comp-cdn", "side": "left", "offset": 0.5 },
-            "targetPoint": { "x": 264, "y": 152, "componentId": "comp-browser", "side": "right", "offset": 0.5 },
-            "label": "assets",
-            "lineStyle": "dashed"
-        }
-    ]
+  "viewport": {
+    "scale": 1.1142499508658579,
+    "panX": -1477.1658529474819,
+    "panY": -1188.7585362968193
+  },
+  "components": [
+    {
+      "type": "port",
+      "id": "comp_1775571680136_txeksjkpl",
+      "x": 1789,
+      "y": 1469,
+      "width": 22,
+      "height": 22,
+      "title": "HTTPS",
+      "parentId": null,
+      "snappedToId": "comp_1775571567202_cfct8ho8b",
+      "snappedSide": "left",
+      "snappedOffset": 0.5
+    },
+    {
+      "type": "component",
+      "id": "comp_1775571567202_53jreddm2",
+      "x": 2160,
+      "y": 1300,
+      "width": 200,
+      "height": 80,
+      "title": "Web Application",
+      "parentId": null,
+      "description": "Container",
+      "borderColor": "#A78BFA"
+    },
+    {
+      "type": "tag",
+      "id": "comp_1775571567202_hdnsvijia",
+      "x": 2287.933436496321,
+      "y": 1367.1354984656728,
+      "width": 60.92,
+      "height": 24,
+      "title": "Volume",
+      "parentId": null,
+      "text": "Volume",
+      "backgroundColor": "#EDE9FE",
+      "textColor": "#5B21B6"
+    },
+    {
+      "type": "tag",
+      "id": "comp_1775571567202_zerjnsoy9",
+      "x": 2651.191233371292,
+      "y": 1506.8777015907012,
+      "width": 60.92,
+      "height": 24,
+      "title": "Volume",
+      "parentId": null,
+      "text": "Volume",
+      "backgroundColor": "#EDE9FE",
+      "textColor": "#5B21B6"
+    },
+    {
+      "type": "port",
+      "id": "comp_1775581040165_d2r0y8215",
+      "x": 2149,
+      "y": 1329,
+      "width": 22,
+      "height": 22,
+      "title": "HTTP",
+      "parentId": null,
+      "portNumber": 3000,
+      "snappedToId": "comp_1775571567202_53jreddm2",
+      "snappedSide": "left",
+      "snappedOffset": 0.5
+    },
+    {
+      "type": "component",
+      "id": "comp_1775583873725_r1noba9zb",
+      "x": 2160,
+      "y": 1580,
+      "width": 200,
+      "height": 80,
+      "title": "Web Application",
+      "parentId": null,
+      "description": "Container",
+      "borderColor": "#A78BFA"
+    },
+    {
+      "type": "tag",
+      "id": "comp_1775583873725_qjdru81xn",
+      "x": 2287.933436496321,
+      "y": 1647.1354984656728,
+      "width": 60.92,
+      "height": 24,
+      "title": "Volume",
+      "parentId": null,
+      "text": "Volume",
+      "backgroundColor": "#EDE9FE",
+      "textColor": "#5B21B6"
+    },
+    {
+      "type": "component",
+      "id": "comp_1775571567202_tnxxydwog",
+      "x": 2520,
+      "y": 1440,
+      "width": 200,
+      "height": 80,
+      "title": "Database",
+      "parentId": null,
+      "description": "Container",
+      "borderColor": "#A78BFA"
+    },
+    {
+      "type": "component",
+      "id": "comp_1775583903571_13z1aq0yg",
+      "x": 2160,
+      "y": 1440,
+      "width": 200,
+      "height": 80,
+      "title": "Session Store",
+      "parentId": null,
+      "description": "Container",
+      "borderColor": "#A78BFA"
+    },
+    {
+      "type": "component",
+      "id": "comp_1775571567202_cfct8ho8b",
+      "x": 1800,
+      "y": 1440,
+      "width": 200,
+      "height": 80,
+      "title": "Reverse Proxy",
+      "parentId": null,
+      "description": "Service",
+      "borderColor": "#60A5FA"
+    },
+    {
+      "type": "component",
+      "id": "comp_1775571567202_ybq3sepdw",
+      "x": 1520,
+      "y": 1440,
+      "width": 200,
+      "height": 80,
+      "title": "Web Browser",
+      "parentId": null,
+      "description": "Desktop Application",
+      "borderColor": "#60A5FA"
+    },
+    {
+      "type": "port",
+      "id": "comp_1775583873725_kqz1ybh3b",
+      "x": 2149,
+      "y": 1609,
+      "width": 22,
+      "height": 22,
+      "title": "HTTP",
+      "parentId": null,
+      "portNumber": 3001,
+      "snappedToId": "comp_1775583873725_r1noba9zb",
+      "snappedSide": "left",
+      "snappedOffset": 0.5
+    },
+    {
+      "type": "tag",
+      "id": "comp_1775581081397_v5x47lq8u",
+      "x": 1941.293557291886,
+      "y": 1430.252937564998,
+      "width": 40,
+      "height": 24,
+      "title": "HA",
+      "parentId": null,
+      "text": "HA",
+      "backgroundColor": "#DBEAFE",
+      "textColor": "#1E40AF"
+    },
+    {
+      "type": "tag",
+      "id": "comp_1775584005086_76ce5t90x",
+      "x": 2664.524463535534,
+      "y": 1428.081072981684,
+      "width": 40,
+      "height": 24,
+      "title": "HA",
+      "parentId": null,
+      "text": "HA",
+      "backgroundColor": "#EDE9FE",
+      "textColor": "#5B21B6"
+    },
+    {
+      "type": "boundary",
+      "id": "comp_1775571567202_a0koeryu7",
+      "x": 2100,
+      "y": 1260,
+      "width": 320,
+      "height": 450,
+      "title": "App cluster",
+      "parentId": null,
+      "borderColor": "#A78BFA"
+    },
+    {
+      "type": "user",
+      "id": "comp_1775571602126_5jwolpo35",
+      "x": 1440,
+      "y": 1460,
+      "width": 40,
+      "height": 40,
+      "title": "User",
+      "parentId": null,
+      "borderColor": "#C4B5FD"
+    },
+    {
+      "type": "numbered-dot",
+      "id": "comp_1775584343179_if31m7nqw",
+      "x": 1741.4233572328096,
+      "y": 1425.4415525113786,
+      "width": 32,
+      "height": 32,
+      "title": "Element",
+      "parentId": null,
+      "number": 1
+    },
+    {
+      "type": "numbered-dot",
+      "id": "comp_1775584350826_ji69cyawk",
+      "x": 2054.7201265764143,
+      "y": 1463.7877716758303,
+      "width": 32,
+      "height": 32,
+      "title": "Element",
+      "parentId": null,
+      "number": 2
+    },
+    {
+      "type": "numbered-dot",
+      "id": "comp_1775584364238_qua0dvuuk",
+      "x": 2430.0235481859404,
+      "y": 1462.9718946723312,
+      "width": 32,
+      "height": 32,
+      "title": "Element",
+      "parentId": null,
+      "number": 4
+    },
+    {
+      "type": "numbered-dot",
+      "id": "comp_1775584357152_0ao0vre7t",
+      "x": 2212.1843882517155,
+      "y": 1394.4382263784178,
+      "width": 32,
+      "height": 32,
+      "title": "Element",
+      "parentId": null,
+      "number": 3
+    },
+    {
+      "type": "numbered-dot",
+      "id": "comp_1775584368154_trt7kzlbi",
+      "x": 2211.3685112482167,
+      "y": 1536.4008249872386,
+      "width": 32,
+      "height": 32,
+      "title": "Element",
+      "parentId": null,
+      "number": 3
+    },
+    {
+      "type": "text",
+      "id": "comp_1775584382627_wncw7lvcg",
+      "x": 1800,
+      "y": 1540,
+      "width": 220,
+      "height": 58,
+      "title": "Element",
+      "parentId": null,
+      "text": "TLS endpoint and load balancer with high availability"
+    }
+  ],
+  "connections": [
+    {
+      "id": "conn_1775571567202_kj3gjv8y5",
+      "sourcePoint": {
+        "x": 1580,
+        "y": 1350,
+        "componentId": "comp_1775571567202_ybq3sepdw",
+        "side": "right",
+        "offset": 0.5
+      },
+      "targetPoint": {
+        "x": 1820,
+        "y": 1340,
+        "componentId": "comp_1775571680136_txeksjkpl",
+        "side": "left",
+        "offset": 0.5
+      },
+      "strokeColor": "#64748B",
+      "strokeWidth": 2,
+      "label": "",
+      "lineStyle": "solid",
+      "arrowType": "filled"
+    },
+    {
+      "id": "conn_1775571567202_ek3688qtr",
+      "sourcePoint": {
+        "x": 2000,
+        "y": 1431.2993854808826,
+        "componentId": "comp_1775571567202_cfct8ho8b",
+        "side": "right",
+        "offset": 0.39124231851103275
+      },
+      "targetPoint": {
+        "x": 2160,
+        "y": 1340,
+        "componentId": "comp_1775581040165_d2r0y8215",
+        "side": "left",
+        "offset": 0.5
+      },
+      "strokeColor": "#64748B",
+      "strokeWidth": 2,
+      "label": "",
+      "lineStyle": "solid",
+      "arrowType": "filled"
+    },
+    {
+      "id": "conn_1775571567202_7lco3r7eh",
+      "sourcePoint": {
+        "x": 2340,
+        "y": 1350,
+        "componentId": "comp_1775571567202_53jreddm2",
+        "side": "right",
+        "offset": 0.5
+      },
+      "targetPoint": {
+        "x": 2560,
+        "y": 1387.8620938145975,
+        "componentId": "comp_1775571567202_tnxxydwog",
+        "side": "left",
+        "offset": 0.34827617268246913
+      },
+      "strokeColor": "#64748B",
+      "strokeWidth": 2,
+      "label": "",
+      "lineStyle": "solid",
+      "arrowType": "filled"
+    },
+    {
+      "id": "conn_1775580811708_f7tncp7gp",
+      "sourcePoint": {
+        "x": 1419.9992344595414,
+        "y": 1480.174988663331,
+        "componentId": "comp_1775571602126_5jwolpo35",
+        "side": "right",
+        "offset": 0.501392533305097
+      },
+      "targetPoint": {
+        "x": 1480,
+        "y": 1480,
+        "componentId": "comp_1775571567202_ybq3sepdw",
+        "side": "left",
+        "offset": 0.5
+      },
+      "strokeColor": "#64748B",
+      "strokeWidth": 2,
+      "label": "",
+      "lineStyle": "solid",
+      "arrowType": "filled"
+    },
+    {
+      "id": "conn_1775583887091_az6q5fjti",
+      "sourcePoint": {
+        "x": 2000,
+        "y": 1451.9320990223682,
+        "componentId": "comp_1775571567202_cfct8ho8b",
+        "side": "right",
+        "offset": 0.6491512377796027
+      },
+      "targetPoint": {
+        "x": 2149,
+        "y": 1540,
+        "componentId": "comp_1775583873725_kqz1ybh3b",
+        "side": "left",
+        "offset": 0.5
+      },
+      "strokeColor": "#64748B",
+      "strokeWidth": 2,
+      "label": "",
+      "lineStyle": "solid",
+      "arrowType": "filled"
+    },
+    {
+      "id": "conn_1775583926339_tj42eg6xa",
+      "sourcePoint": {
+        "x": 2260,
+        "y": 1380,
+        "componentId": "comp_1775571567202_53jreddm2",
+        "side": "bottom",
+        "offset": 0.5
+      },
+      "targetPoint": {
+        "x": 2260,
+        "y": 1460,
+        "componentId": "comp_1775583903571_13z1aq0yg",
+        "side": "top",
+        "offset": 0.5
+      },
+      "strokeColor": "#64748B",
+      "strokeWidth": 2,
+      "label": "",
+      "lineStyle": "solid",
+      "arrowType": "filled"
+    },
+    {
+      "id": "conn_1775583928761_k3hrpw65r",
+      "sourcePoint": {
+        "x": 2260,
+        "y": 1600,
+        "componentId": "comp_1775583873725_r1noba9zb",
+        "side": "top",
+        "offset": 0.5
+      },
+      "targetPoint": {
+        "x": 2260,
+        "y": 1540,
+        "componentId": "comp_1775583903571_13z1aq0yg",
+        "side": "bottom",
+        "offset": 0.5
+      },
+      "strokeColor": "#64748B",
+      "strokeWidth": 2,
+      "label": "",
+      "lineStyle": "solid",
+      "arrowType": "filled"
+    }
+  ]
 }
