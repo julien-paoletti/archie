@@ -3,6 +3,7 @@ node_modules
 
 # output
 docs
+viewer/dist
 
 # dotenv environment variable files
 .env
