@@ -125,9 +125,9 @@ export class ArchieViewer {
     private readonly abortController = new AbortController();
     private readonly resizeObserver: ResizeObserver;
 
-    constructor(canvasId: string, options: ViewerOptions = {}) {
-        const canvas = typeof canvasId === 'string' ? document.getElementById(canvasId) as HTMLCanvasElement : null;
-        if (!canvas) throw new Error(`Canvas element "${canvasId}" not found`);
+    constructor(canvasIdOrEl: string | HTMLCanvasElement, options: ViewerOptions = {}) {
+        const canvas = typeof canvasIdOrEl === 'string' ? document.getElementById(canvasIdOrEl) as HTMLCanvasElement : null;
+        if (!canvas) throw new Error(`Canvas element "${canvasIdOrEl}" not found`);
 
         this.canvas = canvas;
         this.renderer = new CanvasRenderer(canvas);
