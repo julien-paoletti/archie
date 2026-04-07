@@ -1,174 +1,204 @@
-# Archie
+# Archie — System Architecture Diagram Editor
 
-A system architecture diagram editor built with TypeScript, Bun and Claude.
+A canvas-based system architecture diagram editor built with TypeScript and Bun. Design architecture diagrams using a rich palette of elements, connect them with styled Bézier curves, and export or embed the result anywhere.
 
-Made with ❤️ in Bordeaux
+**[Open the editor →](https://julien-paoletti.github.io/archie/)**
+
+![Archie editor screenshot](assets/screenshot.png)
+
+---
+
+## Elements
+
+| Element | Description |
+| --------- | ----------- |
+| **Component** | Rectangular block with title, optional description and icon |
+| **User** | Circular shape representing a human actor |
+| **Module** | Container grouping related components (auto-layout) |
+| **Domain** | Higher-level container grouping modules and components |
+| **System** | Top-level container grouping domains |
+| **Boundary** | Dashed border for visual grouping — configurable label position |
+| **Note** | Multi-line annotation with color themes and optional icon |
+| **Port** | Named connection point snapped to a component border |
+| **Label** | Plain text, no background |
+| **Tag** | Compact colored label |
+| **Numbered Dot** | Free-floating numbered marker, always rendered on top |
+
+Drag any element from the palette onto the canvas. Double-click to edit its title inline. Resize with corner and edge handles. `Ctrl+Drag` to clone.
+
+---
+
+## Connections
+
+- Drag from a border connection point to another element to create a connection
+- Multi-segment curves with draggable control handles
+- Catmull-Rom mode — curve passes through anchor positions without handle editing
+- Add or remove intermediate anchor points via right-click
+- Line styles: **solid**, **dashed**, **dotted**
+- Arrow styles: **filled**, **outline**, **line**, **none**
+- Custom stroke color and inline label
+
+---
 
 ## Features
 
-### Editor
+### Canvas & Navigation
 
-- Canvas-based rendering with crosshair guides
-- Grid snapping for precise placement
-- Auto-save to localStorage
-- Undo/Redo support (Ctrl+Z / Ctrl+Y)
-- Zoom & Pan (mouse wheel zoom, Space+drag or middle-click to pan)
-- Viewport persistence (zoom and pan saved/restored)
-- Minimap for quick navigation in large diagrams
-- Export diagram as PNG (whole diagram or selection only)
-- Collapsible palette panel
-
-### Elements
-
-- **Component** - Rectangular element with centered title, gradient background, and optional icon
-- **User** - Circular element representing human stakeholders
-- **Module** - Teal container for grouping components with auto-layout
-- **Domain** - Blue container for higher-level grouping
-- **Boundary** - Dashed border element for visual grouping (configurable label position)
-- **Note** - Multi-line text note with customizable color themes and line-height snapping
-- **Numbered Dot** - Small numbered marker, free placement (no grid snap), always on top
-- **Label** - Simple text label without background
-- **Tag** - Compact colored label for annotations
-- Drag and drop from palette to canvas
-- Resize using corner and edge handles
-- Double-click to edit title (inline editing)
-- Ctrl+drag to clone elements
-- Shift+drag to constrain movement to a single axis
-- Lucide icons support for Components
-
-### Selection
-
-- Click to select single element
-- Shift+click to toggle multi-selection
-- Box selection - drag on empty canvas to select multiple elements
-- Delete/Backspace to remove selected elements
-- Escape to clear selection
-- Align selected elements via context menu
-
-### Connections
-
-- Click and drag on element border to start a connection
-- Drag to another element's border to complete
-- Multi-segment Bézier curves with intermediate anchor points
-- Draggable control handles for precise curve shaping
-- Click to select connections, Delete to remove
-- Drag connection endpoints to reconnect
-- Configurable line styles (solid, dashed, dotted)
-- Configurable arrow types (filled, outline, line, none)
-- Customizable stroke color
-- Right-click for context menu (edit label, add/remove control points, reset curve)
-
-### Context Menu
-
-- Right-click on connections: Edit Label, Line Style, Arrow Type, Stroke Color, Add/Remove Control Points, Reset Curve, Delete
-- Right-click on components: Add/Edit Description
-- Right-click on notes: Change color theme, adjust font size
-- Right-click on tags: Change color theme
-- Right-click on boundaries: Change label position (4 corners)
-- Right-click on elements with borders: Change border color
-- Multi-selection: Align elements vertically
+- Snap to grid (20 px)
+- Zoom with scroll wheel, pan with `Space+Drag` or middle-click
+- Minimap for navigating large diagrams
+- Crosshair guides
 
 ### File Management
 
-- Save/Open diagrams as JSON files (Ctrl+S / Ctrl+O)
-- Remembers file handle for quick subsequent saves (no dialog)
-- New diagram (Ctrl+N)
-- Toast notifications on save/open
+- Open and save `.json` files via the File System Access API
+- No dialog on subsequent saves — the opened file handle is reused
+- Auto-save to `localStorage` between sessions
+- Viewport (zoom & pan) persisted and restored on reload
+- Three built-in example diagrams available from the **Examples** dropdown
 
-### Keyboard Shortcuts
+### Editing
+
+- Undo / Redo — up to 50 history steps (`Ctrl+Z` / `Ctrl+Y`)
+- Copy, Cut, Paste — cross-session clipboard
+- Box selection — drag on empty canvas
+- Multi-select with `Shift+Click`
+- Align selected elements horizontally or vertically via context menu
+- Group a selection into a Module via context menu
+- Export diagram or selection as **PNG**
+
+### Context Menu
+
+| Target | Actions |
+| ------ | ------- |
+| Connection | Edit label · Line style · Arrow type · Stroke color · Add/remove anchor · Reset curve · Delete |
+| Component | Edit description · Border color |
+| Note | Color theme · Icon · Icon position · Font size |
+| Tag | Color theme |
+| Boundary | Label position (4 corners) |
+| Multi-selection | Align vertically · Align horizontally · Group into Module |
+
+---
+
+## Keyboard Shortcuts
 
 | Shortcut | Action |
 | -------- | ------ |
-| `Ctrl+S` | Save diagram |
-| `Ctrl+O` | Open diagram |
-| `Ctrl+N` | New diagram |
-| `Delete` / `Backspace` | Delete selected elements |
+| `Ctrl/Cmd + S` | Save |
+| `Ctrl/Cmd + O` | Open |
+| `Ctrl/Cmd + N` | New diagram |
+| `Ctrl/Cmd + Z` | Undo |
+| `Ctrl/Cmd + Y` / `Ctrl/Cmd + Shift + Z` | Redo |
+| `Ctrl/Cmd + A` | Select all |
+| `Ctrl/Cmd + C` | Copy |
+| `Ctrl/Cmd + X` | Cut |
+| `Ctrl/Cmd + V` | Paste |
+| `Ctrl/Cmd + Drag` | Clone element |
+| `Shift + Drag` | Constrain movement to one axis |
+| `Shift + Click` | Toggle multi-selection |
+| `Space + Drag` | Pan canvas |
+| `Scroll wheel` | Zoom |
+| `Delete` / `Backspace` | Delete selected |
 | `Escape` | Clear selection |
-| `Ctrl+A` | Select all |
-| `Ctrl+Z` | Undo |
-| `Ctrl+Y` / `Ctrl+Shift+Z` | Redo |
-| `Ctrl+C` | Copy selected |
-| `Ctrl+V` | Paste |
-| `Ctrl+X` | Cut selected |
-| `Ctrl+Drag` | Clone element |
-| `Shift+Drag` | Constrain to horizontal/vertical |
-| `Shift+Click` | Toggle multi-selection |
-| `Space+Drag` | Pan canvas |
-| `Mouse Wheel` | Zoom in/out |
 
-## Viewer
+---
 
-Consumer usage
+## Archie Viewer
 
-```js
-import { ArchieViewer } from '@julien-paoletti/viewer';
-import type { SerializedDiagram } from '@julien-paoletti/viewer';
+The `@julien-paoletti/archie-viewer` package provides a lightweight, read-only canvas viewer for embedding Archie diagrams in any TypeScript or JavaScript project.
+
+### Installation
+
+```bash
+npm install @julien-paoletti/archie-viewer \
+  --registry https://npm.pkg.github.com
+```
+
+### Usage
+
+```typescript
+import { ArchieViewer } from '@julien-paoletti/archie-viewer';
+import type { SerializedDiagram } from '@julien-paoletti/archie-viewer';
 
 const viewer = new ArchieViewer('my-canvas', { fitPadding: 40 });
 
-const diagram: SerializedDiagram = await fetch('/diagrams/infra.json').then(r => r.json());
+const diagram: SerializedDiagram = await fetch('/diagrams/infra.json')
+  .then(r => r.json());
+
 viewer.load(diagram);
 viewer.fitToContent();
 
-// cleanup when unmounting
+// Clean up when the host component unmounts
 viewer.destroy();
 ```
 
-The canvas just needs to exist in the DOM — no required wrapper divs. Panning works with middle-click or Alt+drag; zoom with Ctrl+wheel; scroll-to-pan with normal wheel. Call bun run build:viewer to produce the dist.
+The canvas just needs to exist in the DOM — no wrapper divs required. Pan with middle-click or `Alt+Drag`; zoom with `Ctrl+Wheel`. The viewer is purely read-only: no selection, drag, or context menus.
 
-### Release flow
+### Releasing a new viewer version
 
-bump version in viewer/package.json, then:
+Bump the version in `viewer/package.json`, then:
 
 ```bash
 git add viewer/package.json
-git commit -m "chore: bump @archie/viewer to 0.2.0"
-git tag v0.2.0
+git commit -m "chore: bump viewer to x.y.z"
+git tag vx.y.z
 git push && git push --tags
 ```
 
-## Installation
+The `publish-viewer` GitHub Actions workflow will build and publish the package to GitHub Packages automatically.
 
-```bash
-bun install
-```
+---
 
 ## Development
 
+### Prerequisites
+
+[Bun](https://bun.sh) >= 1.0
+
+### Setup
+
 ```bash
-bun run dev     # Watch mode for TypeScript
-bun run serve   # Local dev server
+git clone https://github.com/julien-paoletti/archie.git
+cd archie
+bun install
 ```
 
-## Build
+### Commands
 
-```bash
-bun run build   # Production build to docs/
+| Command | Description |
+| ------- | ----------- |
+| `bun run dev` | Watch mode — bundles to `src/dist/` |
+| `bun run serve` | Dev server at `http://localhost:3000` |
+| `bun run build` | Production build to `docs/` |
+| `bun run build:viewer` | Build the viewer npm package |
+
+### Project structure
+
+```text
+archie/
+├── src/
+│   ├── index.html          # App entry point
+│   ├── app.ts              # Bootstrap, toolbar, file management
+│   ├── editor.ts           # Editor coordinator (thin, delegates to handlers)
+│   ├── canvas/             # Element classes, connection math, rendering
+│   ├── editor/             # Handler modules: mouse, keyboard, serialization…
+│   ├── demos/              # Built-in example diagrams (JSON)
+│   └── css/styles.css
+├── viewer/                 # Standalone viewer npm package
+│   ├── src/
+│   │   ├── viewer.ts       # ArchieViewer class
+│   │   └── index.ts        # Public API
+│   └── package.json
+├── scripts/
+│   ├── build.ts            # Production build script
+│   └── serve.ts            # Dev server
+└── docs/                   # GitHub Pages output
 ```
 
-## Backlog
+### Deployment
 
-- [ ] add new elements:
+Pushing to `trunk` triggers the `deploy` workflow which builds the app and publishes it to GitHub Pages at [julien-paoletti.github.io/archie](https://julien-paoletti.github.io/archie/).
 
-### Structural
+---
 
-Database — cylinder shape, for datastores
-Queue / MessageBus — for async messaging / event streams
-Actor — distinct from User, for external systems/roles (often a stick figure variant or labeled box)
-ExternalSystem — a component that's outside your boundary (distinct styling, e.g., greyed out)
-
-### Annotations / Markers
-
-Milestone / Step — numbered sequence marker (different from NumberedDot, e.g., diamond or flag)
-Legend entry — for explaining colors/shapes
-
-### Infrastructure / Deployment
-
-Server / Node — physical or virtual machine
-Container (Docker-style) — deployment unit (distinct from the diagram container Module)
-Cloud / Region — cloud boundary shape
-
-### Interaction / Flow
-
-Decision — diamond shape for flow diagrams
-Process — rounded rectangle with distinct color for process flows
+Made with ❤️ in Bordeaux

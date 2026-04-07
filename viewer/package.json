@@ -1,6 +1,6 @@
 {
   "name": "@julien-paoletti/archie-viewer",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Embeddable read-only viewer for Archie architecture diagrams",
   "type": "module",
   "homepage": "https://github.com/julien-paoletti/archie#readme",
