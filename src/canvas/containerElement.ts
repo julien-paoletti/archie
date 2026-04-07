@@ -80,12 +80,23 @@ export abstract class ContainerElement extends DiagramElement {
     }
 
     addChild(component: DiagramElement): void {
-        if (component === this) return; // prevent self-reference
+        if (component === this) return;
         if (!this._children.includes(component)) {
             this._children.push(component);
             component.parentId = this.id;
             this.recalculateBounds();
         }
+    }
+
+    addChildren(components: DiagramElement[]): void {
+        let added = false;
+        for (const comp of components) {
+            if (comp === this || this._children.includes(comp)) continue;
+            this._children.push(comp);
+            comp.parentId = this.id;
+            added = true;
+        }
+        if (added) this.recalculateBounds();
     }
 
     removeChild(component: DiagramElement): void {

@@ -66,6 +66,13 @@ body {
     gap: 0.5rem;
 }
 
+.toolbar-separator {
+    width: 1px;
+    height: 1.5rem;
+    background: var(--border-color, #e2e8f0);
+    margin: 0 0.25rem;
+}
+
 /* Button styles */
 .btn {
     display: inline-flex;

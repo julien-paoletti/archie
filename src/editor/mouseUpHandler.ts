@@ -239,13 +239,20 @@ function handleDragEnd(state: EditorState): void {
             componentsToAdd.push(state.draggedComponent);
         }
 
+        // Remove from old parents first
         for (const comp of componentsToAdd) {
-            const isNewToContainer = comp.parentId !== targetContainer.id;
             if (comp.parentId && comp.parentId !== targetContainer.id) {
                 const currentParent = state.elements.find(c => c.id === comp.parentId) as Module | Domain | System | undefined;
                 if (currentParent) currentParent.removeChild(comp);
             }
-            if (isNewToContainer) targetContainer.addChild(comp);
+        }
+
+        // Add all new children in one batch so recalculateBounds sees the full set
+        const newToContainer = componentsToAdd.filter(c => c.parentId !== targetContainer.id);
+        targetContainer.addChildren(newToContainer);
+
+        // Resolve overlaps after bounds are stable
+        for (const comp of componentsToAdd) {
             resolveOverlapInContainer(comp, targetContainer);
         }
 
