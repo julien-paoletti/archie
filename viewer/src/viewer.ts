@@ -125,9 +125,9 @@ export class ArchieViewer {
     private readonly abortController = new AbortController();
     private readonly resizeObserver: ResizeObserver;
 
-    constructor(canvasIdOrEl: string | HTMLCanvasElement, options: ViewerOptions = {}) {
-        const canvas = typeof canvasIdOrEl === 'string' ? document.getElementById(canvasIdOrEl) as HTMLCanvasElement : canvasIdOrEl;
-        if (!canvas) throw new Error(`Canvas element "${canvasIdOrEl}" not found`);
+    constructor(canvasId: string, options: ViewerOptions = {}) {
+        const canvas = document.getElementById(canvasId) as HTMLCanvasElement | null;
+        if (!canvas) throw new Error(`Canvas element "${canvasId}" not found`);
 
         this.canvas = canvas;
         this.renderer = new CanvasRenderer(canvas);
@@ -263,6 +263,22 @@ export class ArchieViewer {
         this.ctx.restore();
 
         this.drawZoomIndicator();
+    }
+
+    /**
+     * Returns a PNG data URL of the diagram fitted to the given dimensions.
+     * Pass explicit width/height when the canvas is off-screen (clientWidth/clientHeight = 0).
+     *
+     * @example
+     * // Off-screen / print use case:
+     * const dataUrl = viewer.toDataURL(800, 600);
+     * img.src = dataUrl;
+     *
+     * // Live canvas (already visible in DOM):
+     * const dataUrl = viewer.toDataURL();
+     */
+    toDataURL(type = 'image/png'): string {
+        return this.canvas.toDataURL(type);
     }
 
     /**
