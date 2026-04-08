@@ -266,19 +266,46 @@ export class ArchieViewer {
     }
 
     /**
-     * Returns a PNG data URL of the diagram fitted to the given dimensions.
-     * Pass explicit width/height when the canvas is off-screen (clientWidth/clientHeight = 0).
+     * Renders the diagram into an offscreen canvas sized to tightly frame the
+     * content, then returns a PNG data URL. No wasted space above or below.
      *
-     * @example
-     * // Off-screen / print use case:
-     * const dataUrl = viewer.toDataURL(800, 600);
-     * img.src = dataUrl;
-     *
-     * // Live canvas (already visible in DOM):
-     * const dataUrl = viewer.toDataURL();
+     * @param maxWidth  Maximum pixel width of the output image (default: 1600).
+     * @param padding   Padding in px around the content (default: fitPadding option).
      */
-    toDataURL(type = 'image/png'): string {
-        return this.canvas.toDataURL(type);
+    exportImage(maxWidth = 1600, padding?: number): string {
+        if (this.elements.length === 0) return this.canvas.toDataURL();
+
+        const pad = padding ?? this.options.fitPadding;
+
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        for (const el of this.elements) {
+            minX = Math.min(minX, el.x);
+            minY = Math.min(minY, el.y);
+            maxX = Math.max(maxX, el.x + el.width);
+            maxY = Math.max(maxY, el.y + el.height);
+        }
+
+        const contentW = maxX - minX;
+        const contentH = maxY - minY;
+        const scale = Math.min(MAX_SCALE, (maxWidth - pad * 2) / contentW);
+        const canvasW = Math.round(contentW * scale + pad * 2);
+        const canvasH = Math.round(contentH * scale + pad * 2);
+
+        const offscreen = document.createElement('canvas');
+        offscreen.width = canvasW;
+        offscreen.height = canvasH;
+        const ctx = offscreen.getContext('2d')!;
+
+        ctx.save();
+        ctx.translate(pad - minX * scale, pad - minY * scale);
+        ctx.scale(scale, scale);
+
+        for (const el of getSortedElements(this.elements)) el.draw(ctx);
+        for (const conn of this.connections) conn.draw(ctx, this.elements);
+
+        ctx.restore();
+
+        return offscreen.toDataURL();
     }
 
     /**
