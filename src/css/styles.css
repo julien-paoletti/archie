@@ -60,6 +60,20 @@ body {
     font-size: 0.875rem;
 }
 
+.app-header .current-file {
+    display: none;
+    align-items: center;
+    gap: 0.35em;
+    color: var(--accent-primary);
+    font-size: 0.875rem;
+    font-style: italic;
+    opacity: 0.85;
+}
+
+.app-header .current-file.visible {
+    display: flex;
+}
+
 .header-actions {
     display: flex;
     align-items: center;

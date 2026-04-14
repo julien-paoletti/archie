@@ -58,6 +58,25 @@ class ArchieApp {
     public editor: Editor | null = null;
     private fileHandle: FileSystemFileHandle | null = null;
 
+    private setFileHandle(handle: FileSystemFileHandle | null): void {
+        this.fileHandle = handle;
+        this.setCurrentFileName(handle?.name ?? null);
+    }
+
+    private setCurrentFileName(name: string | null): void {
+        const el = document.getElementById('current-file');
+        if (!el) return;
+        el.classList.toggle('visible', !!name);
+        if (name) {
+            el.replaceChildren(
+                Object.assign(document.createElement('i'), { className: 'ti ti-file' }),
+                document.createTextNode(name)
+            );
+        } else {
+            el.replaceChildren();
+        }
+    }
+
     constructor() {
         this.init();
     }
@@ -293,7 +312,7 @@ class ArchieApp {
             }
 
             this.editor.fromJSON(demo.diagram);
-            this.fileHandle = null;
+            this.setFileHandle(null);
             this.showToast(`Loaded: ${demo.label}`);
             select.value = '';
         });
@@ -357,7 +376,7 @@ class ArchieApp {
                 await writable.write(json);
                 await writable.close();
 
-                this.fileHandle = handle;
+                this.setFileHandle(handle);
                 this.showToast(`Saved to ${handle.name}`);
                 return;
             } catch (err) {
@@ -407,16 +426,12 @@ class ArchieApp {
                 const handle = handles[0];
                 if (!handle) return;
 
-                const permission = await (handle as any).requestPermission({ mode: 'readwrite' });
-                if (permission !== 'granted') return;
-
                 const file = await handle.getFile();
                 const text = await file.text();
                 const data = JSON.parse(text);
 
                 this.editor.fromJSON(data);
-                this.fileHandle = handle;
-
+                this.setFileHandle(handle);
                 this.showToast(`Opened ${handle.name}`);
                 return;
             } catch (err) {
@@ -443,7 +458,7 @@ class ArchieApp {
                 const data = JSON.parse(text);
 
                 this.editor!.fromJSON(data);
-
+                this.setCurrentFileName(file.name);
                 this.showToast(`Opened ${file.name}`);
             } catch (err) {
                 console.error('Failed to load diagram:', err);
@@ -473,7 +488,7 @@ class ArchieApp {
 
         // Clear the diagram
         this.editor.clearAll();
-        this.fileHandle = null;
+        this.setFileHandle(null);
     }
 }
 
