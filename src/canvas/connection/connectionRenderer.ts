@@ -31,13 +31,14 @@ export interface ConnectionDrawData {
     selected: boolean;
     lineDash: number[];
     arrowType: ArrowType;
+    sourceArrowType: ArrowType;
     curveType: CurveType;
     label: string;
     hideLabel: boolean;
 }
 
 export function drawSingleSegment(ctx: CanvasRenderingContext2D, data: ConnectionDrawData): void {
-    const { sourcePos, targetPos, sourceControl, targetControl, selected, strokeColor, strokeWidth, lineDash, arrowType, label, hideLabel } = data;
+    const { sourcePos, targetPos, sourceControl, targetControl, selected, strokeColor, strokeWidth, lineDash, arrowType, sourceArrowType, label, hideLabel } = data;
 
     if (selected) {
         drawSelectionHighlight(ctx, strokeWidth, () => {
@@ -57,9 +58,12 @@ export function drawSingleSegment(ctx: CanvasRenderingContext2D, data: Connectio
     ctx.stroke();
     ctx.setLineDash([]);
 
+    const arrowColor = selected ? SELECTED_COLOR : strokeColor;
     if (arrowType !== 'none') {
-        const arrowColor = selected ? SELECTED_COLOR : strokeColor;
         drawArrowHead(ctx, targetPos, targetControl, arrowColor, strokeWidth, arrowType);
+    }
+    if (sourceArrowType !== 'none') {
+        drawArrowHead(ctx, sourcePos, sourceControl, arrowColor, strokeWidth, sourceArrowType);
     }
 
     if (selected) {
@@ -79,7 +83,7 @@ export function drawMultiSegment(
     firstOutHandle: Point,
     lastInHandle: Point
 ): void {
-    const { sourcePos, targetPos, selected, strokeColor, strokeWidth, lineDash, arrowType, label, hideLabel } = data;
+    const { sourcePos, targetPos, selected, strokeColor, strokeWidth, lineDash, arrowType, sourceArrowType, label, hideLabel } = data;
     const lastAnchor = intermediateAnchors[intermediateAnchors.length - 1]!;
 
     const drawPath = () => {
@@ -104,9 +108,12 @@ export function drawMultiSegment(
     ctx.stroke();
     ctx.setLineDash([]);
 
+    const arrowColor = selected ? SELECTED_COLOR : strokeColor;
     if (arrowType !== 'none') {
-        const arrowColor = selected ? SELECTED_COLOR : strokeColor;
         drawArrowHead(ctx, targetPos, lastInHandle, arrowColor, strokeWidth, arrowType);
+    }
+    if (sourceArrowType !== 'none') {
+        drawArrowHead(ctx, sourcePos, firstOutHandle, arrowColor, strokeWidth, sourceArrowType);
     }
 
     if (selected) {
@@ -264,7 +271,7 @@ export function drawCatmullRomConnection(
     anchors: IntermediateAnchor[]
 ): void {
     if (segments.length === 0) return;
-    const { selected, strokeColor, strokeWidth, lineDash, arrowType, label, hideLabel } = data;
+    const { selected, strokeColor, strokeWidth, lineDash, arrowType, sourceArrowType, label, hideLabel } = data;
 
     const drawPath = () => {
         ctx.moveTo(segments[0]!.start.x, segments[0]!.start.y);
@@ -286,10 +293,14 @@ export function drawCatmullRomConnection(
     ctx.stroke();
     ctx.setLineDash([]);
 
+    const arrowColor = selected ? SELECTED_COLOR : strokeColor;
     if (arrowType !== 'none') {
         const lastSeg = segments[segments.length - 1]!;
-        const arrowColor = selected ? SELECTED_COLOR : strokeColor;
         drawArrowHead(ctx, lastSeg.end, lastSeg.cp2, arrowColor, strokeWidth, arrowType);
+    }
+    if (sourceArrowType !== 'none') {
+        const firstSeg = segments[0]!;
+        drawArrowHead(ctx, firstSeg.start, firstSeg.cp1, arrowColor, strokeWidth, sourceArrowType);
     }
 
     if (selected && anchors.length > 0) {

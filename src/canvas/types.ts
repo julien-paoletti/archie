@@ -77,6 +77,7 @@ export interface ConnectionOptions {
     label?: string;
     lineStyle?: LineStyle;
     arrowType?: ArrowType;
+    sourceArrowType?: ArrowType;
     curveType?: CurveType;
     customControlPoint1?: Point;
     customControlPoint2?: Point;

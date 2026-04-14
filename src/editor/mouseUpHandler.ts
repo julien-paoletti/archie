@@ -175,6 +175,9 @@ function completeConnection(state: EditorState, callbacks: MouseUpCallbacks): bo
     let changed = false;
     if (state.hoverConnectionPoint && dragDist >= minDragDist) {
         callbacks.saveState();
+        const sourceEl = state.elements.find(el => el.id === state.sourceConnectionPoint!.componentId);
+        const targetEl = state.elements.find(el => el.id === state.hoverConnectionPoint!.componentId);
+        const involvesNote = sourceEl instanceof Note || targetEl instanceof Note;
         const connection = new Connection({
             sourcePoint: state.sourceConnectionPoint!,
             targetPoint: {
@@ -183,7 +186,8 @@ function completeConnection(state: EditorState, callbacks: MouseUpCallbacks): bo
                 componentId: state.hoverConnectionPoint.componentId,
                 side: state.hoverConnectionPoint.side,
                 offset: state.hoverConnectionPoint.offset
-            }
+            },
+            ...(involvesNote && { lineStyle: 'dotted', arrowType: 'none' })
         });
         state.connections.push(connection);
         changed = true;

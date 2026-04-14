@@ -35,6 +35,7 @@ export interface ContextMenuCallbacks {
     addPortToConnection: (connection: Connection, end: 'source' | 'target') => void;
     changeConnectionLineStyle: (connection: Connection, style: LineStyle) => void;
     changeConnectionArrowType: (connection: Connection, type: ArrowType) => void;
+    toggleConnectionSourceArrow: (connection: Connection) => void;
     changeConnectionCurveType: (connection: Connection, type: CurveType) => void;
     changeBorderColor: (element: DiagramElement, color: string) => void;
     changeNoteColor: (note: Note, bgColor: string, textColor: string, accentColor: string, borderColor: string) => void;
@@ -170,6 +171,11 @@ export class ContextMenuHandler {
             icon: 'transfer-vertical',
             label: 'Reverse Direction',
             action: () => this.callbacks.reverseConnection(connection)
+        });
+        items.push({
+            icon: 'arrows-horizontal',
+            label: connection.sourceArrowType !== 'none' ? 'Remove Source Arrow' : 'Add Source Arrow',
+            action: () => this.callbacks.toggleConnectionSourceArrow(connection)
         });
 
         // Add port options (only for endpoints not already on a Port)

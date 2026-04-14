@@ -54,6 +54,7 @@ export interface SerializedConnection {
     label?: string;
     lineStyle?: string;
     arrowType?: string;
+    sourceArrowType?: string;
     curveType?: string;
 }
 

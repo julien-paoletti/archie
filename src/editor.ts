@@ -198,6 +198,12 @@ export class Editor {
                 this.saveToStorage();
                 this.render();
             },
+            toggleConnectionSourceArrow: (conn) => {
+                this.saveState();
+                conn.sourceArrowType = conn.sourceArrowType !== 'none' ? 'none' : conn.arrowType === 'none' ? 'filled' : conn.arrowType;
+                this.saveToStorage();
+                this.render();
+            },
             changeConnectionCurveType: (conn, curveType) => {
                 this.saveState();
                 conn.curveType = curveType;

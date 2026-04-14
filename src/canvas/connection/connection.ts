@@ -21,6 +21,7 @@ export class Connection {
     public hideLabel: boolean = false;
     public lineStyle: LineStyle = 'solid';
     public arrowType: ArrowType = 'filled';
+    public sourceArrowType: ArrowType = 'none';
     public curveType: CurveType = 'bezier';
     public customControlPoint1: Point | null = null;
     public customControlPoint2: Point | null = null;
@@ -35,6 +36,7 @@ export class Connection {
         this.label = options.label ?? '';
         this.lineStyle = options.lineStyle ?? 'solid';
         this.arrowType = options.arrowType ?? 'filled';
+        this.sourceArrowType = options.sourceArrowType ?? 'none';
         this.curveType = options.curveType ?? 'bezier';
         this.customControlPoint1 = options.customControlPoint1 ? { ...options.customControlPoint1 } : null;
         this.customControlPoint2 = options.customControlPoint2 ? { ...options.customControlPoint2 } : null;
@@ -91,7 +93,8 @@ export class Connection {
             ...this.getActualControlPoints(sourcePos, targetPos),
             strokeColor: this.strokeColor, strokeWidth: this.strokeWidth,
             selected: this.selected, lineDash: this.getLineDash(),
-            arrowType: this.arrowType, curveType: this.curveType,
+            arrowType: this.arrowType, sourceArrowType: this.sourceArrowType,
+            curveType: this.curveType,
             label: this.label, hideLabel: this.hideLabel
         };
 
@@ -227,6 +230,7 @@ export class Connection {
 
     reverse(): void {
         [this.sourcePoint, this.targetPoint] = [this.targetPoint, this.sourcePoint];
+        [this.arrowType, this.sourceArrowType] = [this.sourceArrowType, this.arrowType];
         [this.customControlPoint1, this.customControlPoint2] = [this.customControlPoint2, this.customControlPoint1];
         this.intermediateAnchors.reverse();
         for (const anchor of this.intermediateAnchors) {
@@ -243,7 +247,8 @@ export class Connection {
             strokeWidth: this.strokeWidth,
             label: this.label,
             lineStyle: this.lineStyle,
-            arrowType: this.arrowType
+            arrowType: this.arrowType,
+            ...(this.sourceArrowType !== 'none' && { sourceArrowType: this.sourceArrowType })
         };
 
         if (this.curveType !== 'bezier') json.curveType = this.curveType;

@@ -242,13 +242,6 @@ export class Note extends DiagramElement {
         this.drawResizeHandles(ctx);
     }
 
-    /**
-     * Get nearest border point for connections (not typically used for notes, but required by base class)
-     */
-    override getNearestBorderPoint(px: number, py: number): { point: { x: number; y: number }; side: 'top' | 'right' | 'bottom' | 'left'; offset: number } | null {
-        return null;
-    }
-
     clone(): Note {
         return new Note({
             x: this.x,

@@ -104,6 +104,7 @@ export function copy(state: EditorState, clipboard: ClipboardData): boolean {
                 ...(conn.label && { label: conn.label }),
                 ...(conn.lineStyle !== 'solid' && { lineStyle: conn.lineStyle }),
                 ...(conn.arrowType !== 'filled' && { arrowType: conn.arrowType }),
+                ...(conn.sourceArrowType !== 'none' && { sourceArrowType: conn.sourceArrowType }),
                 ...(conn.curveType !== 'bezier' && { curveType: conn.curveType }),
                 ...(conn.customControlPoint1 && { customControlPoint1: { ...conn.customControlPoint1 } }),
                 ...(conn.customControlPoint2 && { customControlPoint2: { ...conn.customControlPoint2 } }),
