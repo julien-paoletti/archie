@@ -24,10 +24,24 @@
                         <option value="">Examples…</option>
                     </select>
                 </div>
-                <button class="btn btn-secondary" id="export-png-btn">
-                    <i class="ti ti-photo"></i>
-                    <span>Export PNG</span>
-                </button>
+                <div class="toolbar-separator"></div>
+                <div class="png-dropdown" id="png-dropdown">
+                    <button class="btn btn-secondary" id="png-dropdown-toggle">
+                        <i class="ti ti-photo"></i>
+                        <span>Export PNG</span>
+                        <i class="ti ti-chevron-down png-dropdown-chevron-icon"></i>
+                    </button>
+                    <div class="png-dropdown-menu" id="png-dropdown-menu">
+                        <button class="png-dropdown-item" id="copy-png-btn">
+                            <i class="ti ti-clipboard"></i>
+                            <span>Copy to Clipboard</span>
+                        </button>
+                        <button class="png-dropdown-item" id="download-png-btn">
+                            <i class="ti ti-download"></i>
+                            <span>Download PNG</span>
+                        </button>
+                    </div>
+                </div>
                 <div class="toolbar-separator"></div>
                 <button class="btn btn-secondary" id="new-btn">
                     <i class="ti ti-file-plus"></i>

@@ -191,8 +191,8 @@ export function paste(
     return true;
 }
 
-export function exportPNG(state: EditorState): void {
-    if (state.elements.length === 0) return;
+function renderPNG(state: EditorState): HTMLCanvasElement | null {
+    if (state.elements.length === 0) return null;
 
     const hasSelection = state.selectedElements.length > 0;
     const selectedIds = new Set(state.selectedElements.map(el => el.id));
@@ -278,6 +278,12 @@ export function exportPNG(state: EditorState): void {
 
     ctx.restore();
 
+    return offscreen;
+}
+
+export function exportPNG(state: EditorState): void {
+    const offscreen = renderPNG(state);
+    if (!offscreen) return;
     offscreen.toBlob((blob) => {
         if (!blob) return;
         const url = URL.createObjectURL(blob);
@@ -286,5 +292,16 @@ export function exportPNG(state: EditorState): void {
         a.download = 'diagram.png';
         a.click();
         URL.revokeObjectURL(url);
+    }, 'image/png');
+}
+
+export function copyPNG(state: EditorState, onDone: (err?: Error) => void): void {
+    const offscreen = renderPNG(state);
+    if (!offscreen) return;
+    offscreen.toBlob((blob) => {
+        if (!blob) return;
+        navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+            .then(() => onDone())
+            .catch((err) => onDone(err instanceof Error ? err : new Error(String(err))));
     }, 'image/png');
 }

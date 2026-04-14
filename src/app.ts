@@ -227,9 +227,36 @@ class ArchieApp {
             openBtn.addEventListener('click', blurAfter(() => this.loadDiagram()));
         }
 
-        const exportPngBtn = document.getElementById('export-png-btn');
-        if (exportPngBtn) {
-            exportPngBtn.addEventListener('click', blurAfter(() => this.editor?.exportPNG()));
+        const pngToggle = document.getElementById('png-dropdown-toggle');
+        const pngMenu = document.getElementById('png-dropdown-menu');
+        const copyPngBtn = document.getElementById('copy-png-btn');
+        const downloadPngBtn = document.getElementById('download-png-btn');
+
+        if (pngToggle && pngMenu) {
+            pngToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                pngMenu.classList.toggle('open');
+            });
+            document.addEventListener('click', (e) => {
+                if (!pngMenu.contains(e.target as Node)) {
+                    pngMenu.classList.remove('open');
+                }
+            });
+        }
+        if (copyPngBtn) {
+            copyPngBtn.addEventListener('click', blurAfter(() => {
+                pngMenu?.classList.remove('open');
+                this.editor?.copyPNG((err) => {
+                    if (err) this.showToast('Failed to copy PNG', 3000, 'error');
+                    else this.showToast('Copied to clipboard');
+                });
+            }));
+        }
+        if (downloadPngBtn) {
+            downloadPngBtn.addEventListener('click', blurAfter(() => {
+                pngMenu?.classList.remove('open');
+                this.editor?.exportPNG();
+            }));
         }
     }
 

@@ -486,4 +486,5 @@ export class Editor {
     paste(): boolean { return clipboard.paste(this.state, this.clipboardData, () => this.saveState(), () => this.saveToStorage(), () => this.render()); }
     canPaste(): boolean { return this.clipboardData.elements.length > 0; }
     exportPNG(): void { clipboard.exportPNG(this.state); }
+    copyPNG(onDone: (err?: Error) => void): void { clipboard.copyPNG(this.state, onDone); }
 }
