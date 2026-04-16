@@ -3,7 +3,7 @@
  * Thin coordinator that delegates to focused edit controllers
  */
 
-import { Component, Connection, Label, Note, NumberedDot, Port, Tag, type DiagramElement } from '../canvas/index';
+import { Component, Connection, Label, Module, Note, NumberedDot, Port, Tag, type DiagramElement } from '../canvas/index';
 import type { EditCallbacks } from './editUtils';
 import type { ElementEditExtraCallbacks } from './elementEditController';
 import { createTitleEditState, startTitleEdit, finishTitleEdit, cancelTitleEdit, updateTitlePosition, type TitleEditState } from './titleEditController';
@@ -85,7 +85,7 @@ export class InlineEditController {
     startConnectionLabelEdit(connection: Connection): void { _startConnLabel(this.elementState, connection, this.extraCallbacks); }
     finishConnectionLabelEdit(): void { _finishConnLabel(this.elementState, this.callbacks); }
 
-    startDescriptionEdit(component: Component): void { _startDesc(this.elementState, component, this.callbacks); }
+    startDescriptionEdit(component: Component | Module): void { _startDesc(this.elementState, component, this.callbacks); }
     finishDescriptionEdit(): void { _finishDesc(this.elementState, this.callbacks); }
 
     startNoteEdit(note: Note): void { _startNote(this.elementState, note, this.callbacks); }

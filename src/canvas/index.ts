@@ -18,7 +18,7 @@ export { ContainerElement } from './containerElement';
 // Elements
 export { Component } from './component';
 export { User } from './user';
-export { Module } from './module';
+export { Module, type ModuleOptions } from './module';
 export { Domain } from './domain';
 export { System } from './system';
 export { Boundary } from './boundary';

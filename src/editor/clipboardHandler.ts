@@ -52,9 +52,9 @@ export function copy(state: EditorState, clipboard: ClipboardData): boolean {
                 base.icon = el.icon;
                 base.iconColor = el.iconColor;
             }
-            if (el.description) {
-                base.description = el.description;
-            }
+        }
+        if ((el instanceof Component || el instanceof Module) && el.description) {
+            base.description = el.description;
         }
         if (el instanceof Note || el instanceof Label) {
             base.text = el.text;

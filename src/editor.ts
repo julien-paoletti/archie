@@ -8,6 +8,7 @@ import {
     Component,
     Connection,
     Label,
+    Module,
     Note,
     NumberedDot,
     Port,
@@ -370,7 +371,7 @@ export class Editor {
         else if (component instanceof Label) this.inlineEditController.startLabelEdit(component);
         else if (component instanceof NumberedDot) this.inlineEditController.startNumberEdit(component);
         else if (component instanceof Tag) this.inlineEditController.startTagEdit(component);
-        else if (component instanceof Component && component.isPointInDescriptionArea(pos.x, pos.y)) this.inlineEditController.startDescriptionEdit(component);
+        else if ((component instanceof Component || component instanceof Module) && component.isPointInDescriptionArea(pos.x, pos.y)) this.inlineEditController.startDescriptionEdit(component);
         else this.inlineEditController.startTitleEdit(component);
     }
 

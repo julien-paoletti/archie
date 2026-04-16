@@ -18,6 +18,7 @@ export const MODULE_PADDING = 22;
 export const MODULE_TITLE_HEIGHT = 29;
 export const MODULE_MIN_WIDTH = 150;
 export const MODULE_MIN_HEIGHT = 100;
+export const MODULE_DESCRIPTION_OFFSET = 16; // px below the title bar to the description baseline
 
 // Domain constants
 export const DOMAIN_PADDING = 28;

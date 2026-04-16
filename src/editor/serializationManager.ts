@@ -124,9 +124,9 @@ export class SerializationManager {
                         base.icon = c.icon;
                         base.iconColor = c.iconColor;
                     }
-                    if (c.description) {
-                        base.description = c.description;
-                    }
+                }
+                if ((c instanceof Component || c instanceof Module) && c.description) {
+                    base.description = c.description;
                 }
                 if (c instanceof Note || c instanceof Label) {
                     base.text = c.text;
@@ -399,9 +399,9 @@ export class SerializationManager {
                     base.icon = el.icon;
                     base.iconColor = el.iconColor;
                 }
-                if (el.description) {
-                    base.description = el.description;
-                }
+            }
+            if ((el instanceof Component || el instanceof Module) && el.description) {
+                base.description = el.description;
             }
             return base;
         });

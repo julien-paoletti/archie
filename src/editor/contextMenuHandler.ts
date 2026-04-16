@@ -26,7 +26,7 @@ export interface ContextMenuState {
 export interface ContextMenuCallbacks {
     startTitleEdit: (element: DiagramElement) => void;
     startConnectionLabelEdit: (connection: Connection) => void;
-    startDescriptionEdit: (component: Component) => void;
+    startDescriptionEdit: (component: Component | Module) => void;
     addIntermediateAnchor: (connection: Connection, pos: Point) => void;
     removeIntermediateAnchor: (connection: Connection, index: number) => void;
     resetConnectionCurve: (connection: Connection) => void;
@@ -286,11 +286,11 @@ export class ContextMenuHandler {
             action: () => this.callbacks.startTitleEdit(element)
         });
 
-        // Add description option (only for Component type)
-        if (element instanceof Component) {
+        // Add description option (for Component and Module)
+        if (element instanceof Component || element instanceof Module) {
             const hasDescription = element.description && element.description.length > 0;
             items.push({
-                icon: hasDescription ? 'notes' : 'notes',
+                icon: 'notes',
                 label: hasDescription ? 'Edit Description' : 'Add Description',
                 action: () => this.callbacks.startDescriptionEdit(element)
             });

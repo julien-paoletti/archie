@@ -34,6 +34,8 @@ export abstract class ContainerElement extends DiagramElement {
 
     // Abstract properties that subclasses must define
     protected abstract readonly titleHeight: number;
+
+    protected get extraTopOffset(): number { return 0; }
     protected abstract readonly minWidth: number;
     protected abstract readonly minHeight: number;
     protected abstract readonly defaultGradientColors: ColorStop[];
@@ -125,9 +127,9 @@ export abstract class ContainerElement extends DiagramElement {
      */
     containsPointInContentArea(px: number, py: number): boolean {
         const contentX = this.x + this.padding / 2;
-        const contentY = this.y + this.titleHeight;
+        const contentY = this.y + this.titleHeight + this.extraTopOffset;
         const contentWidth = this.width - this.padding;
-        const contentHeight = this.height - this.titleHeight - this.padding / 2;
+        const contentHeight = this.height - this.titleHeight - this.extraTopOffset - this.padding / 2;
 
         return px >= contentX &&
             px <= contentX + contentWidth &&
@@ -167,8 +169,10 @@ export abstract class ContainerElement extends DiagramElement {
         const childrenWidth = maxX - minX;
         const childrenHeight = maxY - minY;
 
+        const topOffset = this.titleHeight + this.extraTopOffset;
+
         let newWidth = childrenWidth + this.padding * 2;
-        let newHeight = childrenHeight + this.titleHeight + this.padding * 1.5;
+        let newHeight = childrenHeight + topOffset + this.padding * 1.5;
 
         // Apply minimum size constraints and center the container around children
         const finalWidth = Math.max(newWidth, this.minWidth);
@@ -179,9 +183,9 @@ export abstract class ContainerElement extends DiagramElement {
         this.x = minX - this.padding - extraWidth / 2;
         this.width = finalWidth;
 
-        // Center vertically: account for title bar at top
+        // Center vertically: account for title bar (+ description) at top
         const extraHeight = finalHeight - newHeight;
-        this.y = minY - this.titleHeight - this.padding / 2 - extraHeight / 2;
+        this.y = minY - topOffset - this.padding / 2 - extraHeight / 2;
         this.height = finalHeight;
     }
 

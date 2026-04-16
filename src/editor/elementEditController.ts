@@ -3,14 +3,14 @@
  * Handles inline editing for Label, NumberedDot, Tag, Connection label, Description, and Note
  */
 
-import { Component, Connection, Label, Note, NumberedDot, Port, Tag } from '../canvas/index';
+import { Component, Connection, Label, Module, MODULE_DESCRIPTION_OFFSET, Note, NumberedDot, Port, Tag } from '../canvas/index';
 import type { EditCallbacks } from './editUtils';
 import { createInput, attachInputListeners, mountAndFocus } from './editUtils';
 
 export interface ElementEditState {
     editingConnection: Connection | null;
     connectionLabelInput: HTMLInputElement | null;
-    editingDescriptionComponent: Component | null;
+    editingDescriptionComponent: Component | Module | null;
     descriptionInput: HTMLInputElement | null;
     editingNote: Note | null;
     noteTextarea: HTMLTextAreaElement | null;
@@ -101,7 +101,7 @@ function cleanupConnectionLabel(state: ElementEditState): void {
 }
 
 // --- Description ---
-export function startDescriptionEdit(state: ElementEditState, component: Component, callbacks: EditCallbacks): void {
+export function startDescriptionEdit(state: ElementEditState, component: Component | Module, callbacks: EditCallbacks): void {
     if (state.editingDescriptionComponent) finishDescriptionEdit(state, callbacks);
 
     state.editingDescriptionComponent = component;
@@ -112,15 +112,17 @@ export function startDescriptionEdit(state: ElementEditState, component: Compone
     const scale = callbacks.getScale();
     const canvasRect = callbacks.getCanvasRect();
     const scaledWidth = component.width * scale;
-    const scaledHeight = component.height * scale;
     const scaledFontSize = Math.max(10, Math.round(11 * scale));
-    const descriptionOffset = 10;
+
+    const descTopWorld = component instanceof Module
+        ? component.titleHeight + MODULE_DESCRIPTION_OFFSET
+        : component.height / 2 + 12;
 
     const input = createInput('text', 'description-edit-input');
     input.value = component.description || '';
     input.placeholder = 'Enter description...';
     input.style.left = `${canvasRect.left + screenPos.x}px`;
-    input.style.top = `${canvasRect.top + screenPos.y + (scaledHeight / 2) + (descriptionOffset - 6) * scale}px`;
+    input.style.top = `${canvasRect.top + screenPos.y + (descTopWorld - 6) * scale}px`;
     input.style.width = `${scaledWidth}px`;
     input.style.height = `${24 * scale}px`;
     input.style.textAlign = 'center';
@@ -513,11 +515,12 @@ export function updateElementEditPositions(state: ElementEditState, callbacks: E
     if (state.editingDescriptionComponent && state.descriptionInput) {
         const comp = state.editingDescriptionComponent;
         const screenPos = callbacks.worldToScreen(comp.x, comp.y);
-        const scaledWidth = comp.width * scale;
-        const scaledHeight = comp.height * scale;
+        const descTopWorld = comp instanceof Module
+            ? comp.titleHeight + MODULE_DESCRIPTION_OFFSET
+            : comp.height / 2 + 12;
         state.descriptionInput.style.left = `${canvasRect.left + screenPos.x}px`;
-        state.descriptionInput.style.top = `${canvasRect.top + screenPos.y + (scaledHeight / 2) + (10 - 6) * scale}px`;
-        state.descriptionInput.style.width = `${scaledWidth}px`;
+        state.descriptionInput.style.top = `${canvasRect.top + screenPos.y + (descTopWorld - 6) * scale}px`;
+        state.descriptionInput.style.width = `${comp.width * scale}px`;
     }
 
     if (state.editingNote && state.noteTextarea) {

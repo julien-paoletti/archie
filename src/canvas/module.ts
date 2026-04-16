@@ -6,9 +6,11 @@
 import { ContainerElement, type ContainerElementOptions } from './containerElement';
 import { ShapeDrawer } from './shape-drawer';
 import type { ColorStop, ShadowOptions } from './types';
-import { MODULE_PADDING, MODULE_TITLE_HEIGHT, MODULE_MIN_WIDTH, MODULE_MIN_HEIGHT } from './constants';
+import { MODULE_PADDING, MODULE_TITLE_HEIGHT, MODULE_MIN_WIDTH, MODULE_MIN_HEIGHT, MODULE_DESCRIPTION_OFFSET } from './constants';
 
-export interface ModuleOptions extends ContainerElementOptions {}
+export interface ModuleOptions extends ContainerElementOptions {
+    description?: string;
+}
 
 export class Module extends ContainerElement {
     // Required abstract property implementations
@@ -31,13 +33,29 @@ export class Module extends ContainerElement {
     protected readonly defaultTitleFont = 'bold 14px "Segoe UI", sans-serif';
     protected readonly defaultPadding = MODULE_PADDING;
 
+    public description: string;
+    public hideDescription: boolean = false;
+    public readonly descriptionFont = '12px "Segoe UI", sans-serif';
+
+    // 28 = MODULE_DESCRIPTION_OFFSET (16) + half font-size (6) + spacing (6)
+    protected override get extraTopOffset(): number { return this.description ? MODULE_DESCRIPTION_OFFSET + 12 : 0; }
+
     constructor(options: ModuleOptions = {}) {
         super(options);
         this.initContainerProps(options);
+        this.description = options.description ?? '';
 
         // Set default dimensions for an empty module
         this.width = options.width ?? 200;
         this.height = options.height ?? 150;
+    }
+
+    isPointInDescriptionArea(px: number, py: number): boolean {
+        if (!this.description) return false;
+        const descY = this.y + this.titleHeight + MODULE_DESCRIPTION_OFFSET;
+        const descHeight = 16;
+        return px >= this.x && px <= this.x + this.width &&
+            py >= descY - descHeight / 2 && py <= descY + descHeight / 2;
     }
 
     // ========================================================================
@@ -52,8 +70,15 @@ export class Module extends ContainerElement {
             selectionDashPattern: [5, 5]
         });
 
-        // Note: Children are drawn separately by the Editor, not by the Module
-        // This ensures proper z-ordering and selection handling
+        if (this.description && !this.hideDescription) {
+            drawer.drawText(this.description, this.x + this.width / 2, this.y + this.titleHeight + MODULE_DESCRIPTION_OFFSET, {
+                font: this.descriptionFont,
+                color: '#6B7280',
+                align: 'center',
+                baseline: 'middle',
+                maxWidth: this.width - 20
+            });
+        }
     }
 
     // ========================================================================
@@ -61,7 +86,7 @@ export class Module extends ContainerElement {
     // ========================================================================
 
     clone(): Module {
-        const cloned = new Module({
+        return new Module({
             x: this.x,
             y: this.y,
             width: this.width,
@@ -74,10 +99,9 @@ export class Module extends ContainerElement {
             borderWidth: this.borderWidth,
             titleColor: this.titleColor,
             titleFont: this.titleFont,
-            padding: this.padding
+            padding: this.padding,
+            description: this.description
         });
-        // Note: Children are not cloned - the clone is empty
-        return cloned;
     }
 
     static override get type(): string {

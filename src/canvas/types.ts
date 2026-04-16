@@ -97,17 +97,6 @@ export interface ElementOptions extends DiagramElementOptions {
     description?: string; // Optional short description
 }
 
-export interface ModuleOptions extends DiagramElementOptions {
-    borderRadius?: number;
-    gradientColors?: ColorStop[];
-    shadowOptions?: ShadowOptions;
-    borderColor?: string;
-    borderWidth?: number;
-    titleColor?: string;
-    titleFont?: string;
-    padding?: number;
-    childIds?: string[];
-}
 
 export interface DomainOptions extends DiagramElementOptions {
     borderRadius?: number;
