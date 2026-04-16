@@ -26,7 +26,8 @@ import { updateWorldSize } from './viewportHandler';
 
 /** Returns true for annotation/overlay elements that should never be ejected or block others. */
 function isOverlayElement(el: DiagramElement): boolean {
-    return el instanceof Boundary || el instanceof Note || el instanceof Label || el instanceof Tag || el instanceof Port;
+    return el instanceof Boundary || el instanceof Note || el instanceof Label
+        || el instanceof Tag || el instanceof Port || el instanceof NumberedDot;
 }
 
 /**
