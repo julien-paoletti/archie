@@ -3,7 +3,7 @@
  * Type definitions for the diagram editor
  */
 
-import type { ConnectionPoint } from '../canvas/index';
+import type { ConnectionPoint, IntermediateAnchor, Point } from '../canvas/index';
 
 export interface EditorOptions {
     gridSize?: number;
@@ -56,6 +56,9 @@ export interface SerializedConnection {
     arrowType?: string;
     sourceArrowType?: string;
     curveType?: string;
+    customControlPoint1?: Point;
+    customControlPoint2?: Point;
+    intermediateAnchors?: IntermediateAnchor[];
 }
 
 export interface SerializedViewport {

@@ -57,7 +57,12 @@ function validateDiagram(data: unknown): SerializedDiagram | SerializedComponent
     for (const item of d.components) {
         if (!isValidComponent(item)) return null;
     }
-    if (d.connections !== undefined && !Array.isArray(d.connections)) return null;
+    if (d.connections !== undefined) {
+        if (!Array.isArray(d.connections)) return null;
+        for (const item of d.connections) {
+            if (!isValidConnection(item)) return null;
+        }
+    }
     return sanitize(data as SerializedDiagram);
 }
 
@@ -66,6 +71,16 @@ function isValidComponent(item: unknown): boolean {
     const c = item as Record<string, unknown>;
     return typeof c.type === 'string' && typeof c.id === 'string' &&
         typeof c.x === 'number' && typeof c.y === 'number';
+}
+
+function isValidConnection(item: unknown): boolean {
+    if (item === null || typeof item !== 'object') return false;
+    const c = item as Record<string, unknown>;
+    if (typeof c.id !== 'string') return false;
+    const sp = c.sourcePoint as Record<string, unknown> | null;
+    const tp = c.targetPoint as Record<string, unknown> | null;
+    return !!sp && typeof sp.componentId === 'string' &&
+           !!tp && typeof tp.componentId === 'string';
 }
 
 export interface SerializationState {
@@ -196,10 +211,15 @@ export class SerializationManager {
                 this.state.elements.push(component);
             });
             if (data.connections) {
-                data.connections.forEach(connData => {
-                    const connection = new Connection(connData as any);
-                    this.state.connections.push(connection);
-                });
+                const componentIds = new Set(this.state.elements.map(c => c.id));
+                for (const connData of data.connections) {
+                    if (componentIds.has(connData.sourcePoint.componentId) &&
+                        componentIds.has(connData.targetPoint.componentId)) {
+                        this.state.connections.push(new Connection(connData));
+                    } else {
+                        console.warn(`Skipping connection ${connData.id}: references missing element(s)`);
+                    }
+                }
             }
         }
 
@@ -352,10 +372,13 @@ export class SerializationManager {
         });
 
         if (state.connections) {
-            state.connections.forEach(connData => {
-                const connection = new Connection(connData);
-                this.state.connections.push(connection);
-            });
+            const componentIds = new Set(this.state.elements.map(c => c.id));
+            for (const connData of state.connections) {
+                if (componentIds.has(connData.sourcePoint.componentId) &&
+                    componentIds.has(connData.targetPoint.componentId)) {
+                    this.state.connections.push(new Connection(connData));
+                }
+            }
         }
 
         // Restore parent-child relationships
