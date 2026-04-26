@@ -158,13 +158,19 @@ export class Note extends DiagramElement {
             return;
         }
 
-        const totalWordWidth = words.reduce((sum, word) => sum + ctx.measureText(word).width, 0);
+        const wordWidths = words.map(w => ctx.measureText(w).width);
+        const totalWordWidth = wordWidths.reduce((sum, w) => sum + w, 0);
         const spacing = (maxWidth - totalWordWidth) / (words.length - 1);
 
+        if (spacing < 0) {
+            ctx.fillText(text, x, y, maxWidth);
+            return;
+        }
+
         let currentX = x;
-        for (const word of words) {
-            ctx.fillText(word, currentX, y);
-            currentX += ctx.measureText(word).width + spacing;
+        for (let i = 0; i < words.length; i++) {
+            ctx.fillText(words[i]!, currentX, y);
+            currentX += wordWidths[i]! + spacing;
         }
     }
 

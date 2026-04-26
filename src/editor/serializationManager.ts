@@ -77,8 +77,8 @@ function isValidConnection(item: unknown): boolean {
     if (item === null || typeof item !== 'object') return false;
     const c = item as Record<string, unknown>;
     if (typeof c.id !== 'string') return false;
-    const sp = c.sourcePoint as Record<string, unknown> | null;
-    const tp = c.targetPoint as Record<string, unknown> | null;
+    const sp = c.sourcePoint as Record<string, unknown> | undefined;
+    const tp = c.targetPoint as Record<string, unknown> | undefined;
     return !!sp && typeof sp.componentId === 'string' &&
            !!tp && typeof tp.componentId === 'string';
 }
@@ -113,6 +113,18 @@ export class SerializationManager {
     constructor(state: SerializationState, callbacks: SerializationCallbacks) {
         this.state = state;
         this.callbacks = callbacks;
+    }
+
+    private loadConnections(connDataList: SerializedConnection[], warnOnSkip = false): void {
+        const componentIds = new Set(this.state.elements.map(c => c.id));
+        for (const connData of connDataList) {
+            if (componentIds.has(connData.sourcePoint.componentId) &&
+                componentIds.has(connData.targetPoint.componentId)) {
+                this.state.connections.push(new Connection(connData));
+            } else if (warnOnSkip) {
+                console.warn(`Skipping connection ${connData.id}: references missing element(s)`);
+            }
+        }
     }
 
     // Serialization
@@ -211,15 +223,7 @@ export class SerializationManager {
                 this.state.elements.push(component);
             });
             if (data.connections) {
-                const componentIds = new Set(this.state.elements.map(c => c.id));
-                for (const connData of data.connections) {
-                    if (componentIds.has(connData.sourcePoint.componentId) &&
-                        componentIds.has(connData.targetPoint.componentId)) {
-                        this.state.connections.push(new Connection(connData));
-                    } else {
-                        console.warn(`Skipping connection ${connData.id}: references missing element(s)`);
-                    }
-                }
+                this.loadConnections(data.connections, true);
             }
         }
 
@@ -287,13 +291,7 @@ export class SerializationManager {
                         });
                     }
                     if (data.connections && data.connections.length > 0) {
-                        const componentIds = new Set(this.state.elements.map(c => c.id));
-                        for (const connData of data.connections) {
-                            if (componentIds.has(connData.sourcePoint.componentId) &&
-                                componentIds.has(connData.targetPoint.componentId)) {
-                                this.state.connections.push(new Connection(connData as any));
-                            }
-                        }
+                        this.loadConnections(data.connections);
                     }
                     console.log(`Loaded ${data.components?.length ?? 0} component(s) and ${this.state.connections.length} connection(s) from storage`);
                 }
@@ -372,13 +370,7 @@ export class SerializationManager {
         });
 
         if (state.connections) {
-            const componentIds = new Set(this.state.elements.map(c => c.id));
-            for (const connData of state.connections) {
-                if (componentIds.has(connData.sourcePoint.componentId) &&
-                    componentIds.has(connData.targetPoint.componentId)) {
-                    this.state.connections.push(new Connection(connData));
-                }
-            }
+            this.loadConnections(state.connections);
         }
 
         // Restore parent-child relationships
