@@ -63,6 +63,7 @@ export class Module extends ContainerElement {
     // ========================================================================
 
     draw(ctx: CanvasRenderingContext2D, _scale: number = 1): void {
+        ctx.save();
         const drawer = new ShapeDrawer(ctx);
         this.drawContainerBase(ctx, drawer, {
             highlightAlpha: 0.15,
@@ -79,6 +80,7 @@ export class Module extends ContainerElement {
                 maxWidth: this.width - 20
             });
         }
+        ctx.restore();
     }
 
     // ========================================================================

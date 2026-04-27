@@ -163,6 +163,7 @@ export class Note extends DiagramElement {
         const spacing = (maxWidth - totalWordWidth) / (words.length - 1);
 
         if (spacing < 0) {
+            // Single word wider than maxWidth — let the browser compress it
             ctx.fillText(text, x, y, maxWidth);
             return;
         }
@@ -212,6 +213,7 @@ export class Note extends DiagramElement {
             ctx.font = `${this.fontSize}px ${this.fontFamily}`;
             ctx.fillStyle = this.textColor;
             ctx.textBaseline = 'top';
+            ctx.textAlign = 'left';
 
             // Reserve (iconSize + gap) on the icon's corner axes so text never overlaps it
             const iconReserve = this.noteIcon ? iconSize + 4 : 0;
