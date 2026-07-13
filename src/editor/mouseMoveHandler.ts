@@ -33,7 +33,8 @@ import {
     findSystemAtPoint,
     getSortedComponentsForRendering,
     isPointCoveredByHigherComponent,
-    projectPointOnBorder
+    projectPointOnBorder,
+    shiftConnectionGeometryForSelection
 } from './selectionHandler';
 import { updateSnappedPorts } from './dragDropHandler';
 
@@ -341,54 +342,8 @@ function updateDrag(state: EditorState, mode: DraggingMode, e: MouseEvent, pos: 
         }
     }
 
-    // Move intermediate anchors and control points for connections where both endpoints are being moved
-    for (const connection of state.connections) {
-        const sourceId = connection.sourcePoint.componentId;
-        const targetId = connection.targetPoint.componentId;
-        const sourceIsMoving = state.selectedElements.some(el => el.id === sourceId);
-        const targetIsMoving = state.selectedElements.some(el => el.id === targetId);
-
-        if (sourceIsMoving && targetIsMoving) {
-            for (const anchor of connection.intermediateAnchors) {
-                anchor.position.x += dx;
-                anchor.position.y += dy;
-                anchor.handleIn.x += dx;
-                anchor.handleIn.y += dy;
-                anchor.handleOut.x += dx;
-                anchor.handleOut.y += dy;
-            }
-            if (connection.customControlPoint1) {
-                connection.customControlPoint1.x += dx;
-                connection.customControlPoint1.y += dy;
-            }
-            if (connection.customControlPoint2) {
-                connection.customControlPoint2.x += dx;
-                connection.customControlPoint2.y += dy;
-            }
-        } else if ((sourceIsMoving || targetIsMoving) && connection.intermediateAnchors.length > 0) {
-            const count = connection.intermediateAnchors.length;
-            for (let i = 0; i < count; i++) {
-                const ratio = sourceIsMoving
-                    ? (count - i) / (count + 1)
-                    : (i + 1) / (count + 1);
-                const anchor = connection.intermediateAnchors[i]!;
-                anchor.position.x += dx * ratio;
-                anchor.position.y += dy * ratio;
-                anchor.handleIn.x += dx * ratio;
-                anchor.handleIn.y += dy * ratio;
-                anchor.handleOut.x += dx * ratio;
-                anchor.handleOut.y += dy * ratio;
-            }
-            if (sourceIsMoving && connection.customControlPoint1) {
-                connection.customControlPoint1.x += dx;
-                connection.customControlPoint1.y += dy;
-            }
-            if (targetIsMoving && connection.customControlPoint2) {
-                connection.customControlPoint2.x += dx;
-                connection.customControlPoint2.y += dy;
-            }
-        }
-    }
+    // Move intermediate anchors and control points for connections attached to moving elements
+    shiftConnectionGeometryForSelection(state, dx, dy);
 
     // Reposition ports snapped to any of the moving elements (including all descendants of moving containers)
     const movingIds = new Set(state.selectedElements.map(el => el.id));

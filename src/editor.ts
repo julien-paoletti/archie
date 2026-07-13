@@ -36,6 +36,7 @@ import * as dragDrop from './editor/dragDropHandler';
 import * as rendering from './editor/renderingHandler';
 import * as clipboard from './editor/clipboardHandler';
 import * as minimap from './editor/minimapHandler';
+import * as nudge from './editor/nudgeHandler';
 
 // Re-export types for backward compatibility
 export type { EditorOptions } from './editor/editorTypes';
@@ -395,6 +396,27 @@ export class Editor {
         }
         this.saveToStorage();
         this.render();
+    }
+
+    getGridSize(): number { return this.state.gridSize; }
+
+    /**
+     * Move the selection by (dx, dy) from the keyboard. Rapid nudges (key
+     * repeat) are batched into a single undo entry: a snapshot is only taken
+     * when the previous nudge was more than a burst-gap ago.
+     */
+    private lastNudgeTime = 0;
+    nudgeSelected(dx: number, dy: number): boolean {
+        if (this.state.selectedElements.length === 0) return false;
+
+        const now = Date.now();
+        if (now - this.lastNudgeTime > 800) this.saveState();
+        this.lastNudgeTime = now;
+
+        nudge.nudgeSelectedElements(this.state, dx, dy);
+        this.saveToStorage();
+        this.render();
+        return true;
     }
 
     clearSelection(): void { selection.clearSelection(this.state); }

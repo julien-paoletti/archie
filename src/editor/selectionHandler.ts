@@ -257,3 +257,62 @@ export function isPointCoveredByHigherComponent(state: EditorState, point: Point
 
     return false;
 }
+
+/**
+ * Shift connection curve geometry (intermediate anchors, custom control
+ * points) for connections attached to the current selection, after the
+ * selection moved by (dx, dy). Shared by mouse-drag and keyboard nudge.
+ *
+ * - Both endpoints moving: translate everything rigidly.
+ * - One endpoint moving (with anchors): translate anchors proportionally so
+ *   the curve stretches naturally toward the moved end.
+ */
+export function shiftConnectionGeometryForSelection(state: EditorState, dx: number, dy: number): void {
+    for (const connection of state.connections) {
+        const sourceId = connection.sourcePoint.componentId;
+        const targetId = connection.targetPoint.componentId;
+        const sourceIsMoving = state.selectedElements.some(el => el.id === sourceId);
+        const targetIsMoving = state.selectedElements.some(el => el.id === targetId);
+
+        if (sourceIsMoving && targetIsMoving) {
+            for (const anchor of connection.intermediateAnchors) {
+                anchor.position.x += dx;
+                anchor.position.y += dy;
+                anchor.handleIn.x += dx;
+                anchor.handleIn.y += dy;
+                anchor.handleOut.x += dx;
+                anchor.handleOut.y += dy;
+            }
+            if (connection.customControlPoint1) {
+                connection.customControlPoint1.x += dx;
+                connection.customControlPoint1.y += dy;
+            }
+            if (connection.customControlPoint2) {
+                connection.customControlPoint2.x += dx;
+                connection.customControlPoint2.y += dy;
+            }
+        } else if ((sourceIsMoving || targetIsMoving) && connection.intermediateAnchors.length > 0) {
+            const count = connection.intermediateAnchors.length;
+            for (let i = 0; i < count; i++) {
+                const ratio = sourceIsMoving
+                    ? (count - i) / (count + 1)
+                    : (i + 1) / (count + 1);
+                const anchor = connection.intermediateAnchors[i]!;
+                anchor.position.x += dx * ratio;
+                anchor.position.y += dy * ratio;
+                anchor.handleIn.x += dx * ratio;
+                anchor.handleIn.y += dy * ratio;
+                anchor.handleOut.x += dx * ratio;
+                anchor.handleOut.y += dy * ratio;
+            }
+            if (sourceIsMoving && connection.customControlPoint1) {
+                connection.customControlPoint1.x += dx;
+                connection.customControlPoint1.y += dy;
+            }
+            if (targetIsMoving && connection.customControlPoint2) {
+                connection.customControlPoint2.x += dx;
+                connection.customControlPoint2.y += dy;
+            }
+        }
+    }
+}

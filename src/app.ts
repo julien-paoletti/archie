@@ -151,6 +151,19 @@ class ArchieApp {
                 }
             }
 
+            // Arrow keys nudge the selection: grid step, or 1px with Shift
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key) && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                const activeElement = document.activeElement;
+                if (activeElement && !['INPUT', 'TEXTAREA'].includes(activeElement.tagName)) {
+                    const step = e.shiftKey ? 1 : (this.editor?.getGridSize() ?? 24);
+                    const dx = e.key === 'ArrowLeft' ? -step : e.key === 'ArrowRight' ? step : 0;
+                    const dy = e.key === 'ArrowUp' ? -step : e.key === 'ArrowDown' ? step : 0;
+                    if (this.editor?.nudgeSelected(dx, dy)) {
+                        e.preventDefault();
+                    }
+                }
+            }
+
             // Ctrl+N for new diagram
             if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
                 e.preventDefault();
