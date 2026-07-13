@@ -229,8 +229,12 @@ export class Connection {
     }
 
     reverse(): void {
+        // Swap the endpoints (and their per-end geometry) so the arrow head,
+        // which is drawn at targetPoint, moves to the opposite end. The arrow
+        // TYPES stay bound to their visual ends — swapping both the points and
+        // the types would cancel out and leave the connection looking
+        // unchanged.
         [this.sourcePoint, this.targetPoint] = [this.targetPoint, this.sourcePoint];
-        [this.arrowType, this.sourceArrowType] = [this.sourceArrowType, this.arrowType];
         [this.customControlPoint1, this.customControlPoint2] = [this.customControlPoint2, this.customControlPoint1];
         this.intermediateAnchors.reverse();
         for (const anchor of this.intermediateAnchors) {
