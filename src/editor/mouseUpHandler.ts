@@ -116,6 +116,7 @@ export function handleMouseUp(state: EditorState, callbacks: MouseUpCallbacks): 
 
             handleDragEnd(state, mode.component);
             state.potentialDropTarget = null;
+            state.alignmentGuides = [];
             state.mode = IDLE;
             state.canvas.style.cursor = state.hoveredElement ? 'grab' : 'default';
             changed = true;

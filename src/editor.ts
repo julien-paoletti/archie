@@ -79,6 +79,7 @@ export class Editor {
             snapToGrid: options.snapToGrid !== false,
             mode: IDLE,
             hoverConnectionPoint: null,
+            alignmentGuides: [],
             potentialDropTarget: null,
             scale: 1,
             panOffset: { x: 0, y: 0 },

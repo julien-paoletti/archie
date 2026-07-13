@@ -38,6 +38,10 @@ export function render(state: EditorState): void {
         connection.draw(state.ctx, state.elements);
     });
 
+    if (state.alignmentGuides.length > 0) {
+        drawAlignmentGuides(state);
+    }
+
     if (state.hoverConnectionPoint) {
         drawConnectionPoint(state.ctx, state.hoverConnectionPoint.point);
     }
@@ -87,6 +91,29 @@ function drawBoxSelection(state: EditorState, start: Point, current: Point): voi
     ctx.lineWidth = 1;
     ctx.setLineDash([4, 4]);
     ctx.strokeRect(x, y, width, height);
+    ctx.restore();
+}
+
+/** Dashed magenta smart-guide lines shown while a drag aligns with neighbors. */
+function drawAlignmentGuides(state: EditorState): void {
+    const ctx = state.ctx;
+    ctx.save();
+    ctx.strokeStyle = 'rgba(236, 72, 153, 0.9)';
+    ctx.lineWidth = 1 / state.scale;
+    ctx.setLineDash([4 / state.scale, 4 / state.scale]);
+
+    for (const guide of state.alignmentGuides) {
+        ctx.beginPath();
+        if (guide.axis === 'vertical') {
+            ctx.moveTo(guide.position, guide.start);
+            ctx.lineTo(guide.position, guide.end);
+        } else {
+            ctx.moveTo(guide.start, guide.position);
+            ctx.lineTo(guide.end, guide.position);
+        }
+        ctx.stroke();
+    }
+
     ctx.restore();
 }
 

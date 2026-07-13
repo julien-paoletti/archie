@@ -14,6 +14,7 @@ import type {
 } from '../canvas/index';
 import type { InteractionMode } from './interactionMode';
 import { isDragOperation as isDragOperationMode } from './interactionMode';
+import type { AlignmentGuide } from './alignmentGuides';
 
 export interface HoverConnectionPoint {
     point: Point;
@@ -47,6 +48,9 @@ export interface EditorState {
 
     // Connection point currently hovered (transient, independent of mode)
     hoverConnectionPoint: HoverConnectionPoint | null;
+
+    // Smart-guide lines shown while dragging (transient)
+    alignmentGuides: AlignmentGuide[];
 
     // Container drop
     potentialDropTarget: Module | Domain | System | null;

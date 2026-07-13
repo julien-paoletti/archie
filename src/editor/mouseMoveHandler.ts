@@ -14,6 +14,7 @@ import {
     Port,
     System,
     Tag,
+    type Bounds,
     type ConnectionPoint,
     type DiagramElement
 } from '../canvas/index';
@@ -37,6 +38,7 @@ import {
     shiftConnectionGeometryForSelection
 } from './selectionHandler';
 import { updateSnappedPorts } from './dragDropHandler';
+import { collectExactGuides, findAlignmentSnap } from './alignmentGuides';
 
 export function handleMouseMove(
     state: EditorState,
@@ -308,8 +310,10 @@ function updateConnectionSlide(state: EditorState, mode: SlidingConnectionMode, 
 /** Move the dragged element (and co-selected siblings), reflow attached connections, and track drop target. */
 function updateDrag(state: EditorState, mode: DraggingMode, e: MouseEvent, pos: { x: number; y: number }): void {
     const draggedComponent = mode.component;
-    let newX = pos.x - mode.offset.x;
-    let newY = pos.y - mode.offset.y;
+    const rawX = pos.x - mode.offset.x;
+    const rawY = pos.y - mode.offset.y;
+    let newX = rawX;
+    let newY = rawY;
 
     if (state.snapToGrid && !(draggedComponent instanceof NumberedDot) && !(draggedComponent instanceof Tag) && !(draggedComponent instanceof Port)) {
         newX = Math.round(newX / state.gridSize) * state.gridSize;
@@ -326,6 +330,24 @@ function updateDrag(state: EditorState, mode: DraggingMode, e: MouseEvent, pos: 
             newX = mode.startPos.x;
         }
     }
+
+    // Smart guides: snap to nearby edges/centers of stationary elements.
+    // Uses the raw (pre-grid) position so off-grid targets are reachable;
+    // alignment beats grid on any axis where a candidate is found.
+    // Shift (axis-locked precise drag) disables the magnetism.
+    const guideTargets = collectAlignmentTargets(state);
+    if (!e.shiftKey) {
+        const snap = findAlignmentSnap(
+            { x: rawX, y: rawY, width: draggedComponent.width, height: draggedComponent.height },
+            guideTargets
+        );
+        if (snap.dx !== null) newX = rawX + snap.dx;
+        if (snap.dy !== null) newY = rawY + snap.dy;
+    }
+    state.alignmentGuides = collectExactGuides(
+        { x: newX, y: newY, width: draggedComponent.width, height: draggedComponent.height },
+        guideTargets
+    );
 
     const dx = newX - draggedComponent.x;
     const dy = newY - draggedComponent.y;
@@ -377,4 +399,19 @@ function updateDrag(state: EditorState, mode: DraggingMode, e: MouseEvent, pos: 
     } else {
         state.potentialDropTarget = findContainerAtPoint(state, centerX, centerY, draggedComponent);
     }
+}
+
+/** Stationary elements the dragged selection can align to (everything not moving). */
+function collectAlignmentTargets(state: EditorState): Bounds[] {
+    const movingIds = new Set(state.selectedElements.map(el => el.id));
+    const collect = (el: DiagramElement) => {
+        if (el instanceof ContainerElement) {
+            for (const child of el.children) {
+                movingIds.add(child.id);
+                collect(child);
+            }
+        }
+    };
+    for (const el of state.selectedElements) collect(el);
+    return state.elements.filter(el => !movingIds.has(el.id));
 }
