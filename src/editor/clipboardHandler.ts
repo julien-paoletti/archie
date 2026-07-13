@@ -19,7 +19,7 @@ import {
     elementRegistry,
     type DiagramElement
 } from '../canvas/index';
-import type { EditorState } from './editorState';
+import type { EditorContext, EditorState } from './editorState';
 import type { SerializedComponent, SerializedConnection } from './editorTypes';
 import { getSortedComponentsForRendering } from './selectionHandler';
 
@@ -119,13 +119,11 @@ export function copy(state: EditorState, clipboard: ClipboardData): boolean {
 export function paste(
     state: EditorState,
     clipboard: ClipboardData,
-    saveState: () => void,
-    saveToStorage: () => void,
-    render: () => void
+    ctx: EditorContext
 ): boolean {
     if (clipboard.elements.length === 0) return false;
 
-    saveState();
+    ctx.saveState();
 
     const offset = 20;
 
@@ -185,8 +183,8 @@ export function paste(
         }
     }
 
-    render();
-    saveToStorage();
+    ctx.render();
+    ctx.saveToStorage();
 
     return true;
 }

@@ -18,7 +18,7 @@ import {
     elementRegistry,
     type DiagramElement
 } from '../canvas/index';
-import type { EditorState } from './editorState';
+import type { EditorContext, EditorState } from './editorState';
 import type { DragData } from './editorTypes';
 import { getMousePosition } from './viewportHandler';
 import { selectElement } from './selectionHandler';
@@ -157,9 +157,7 @@ export function handleDragLeave(): void {
 export function handleDrop(
     state: EditorState,
     e: DragEvent,
-    saveState: () => void,
-    saveToStorage: () => void,
-    render: () => void
+    ctx: EditorContext
 ): void {
     e.preventDefault();
     if (!e.dataTransfer) return;
@@ -168,7 +166,7 @@ export function handleDrop(
         const data = JSON.parse(e.dataTransfer.getData('application/json')) as DragData;
         if (data.action === 'create' && data.type) {
             const pos = getMousePosition(state, e);
-            createElement(state, data.type, pos.x, pos.y, saveState, saveToStorage, render);
+            createElement(state, data.type, pos.x, pos.y, ctx);
         }
     } catch (_err) {
         // Invalid drag data
@@ -180,9 +178,7 @@ export function createElement(
     type: string,
     x: number,
     y: number,
-    saveState: () => void,
-    saveToStorage: () => void,
-    render: () => void
+    ctx: EditorContext
 ): DiagramElement | null {
     const ComponentClass = elementRegistry.get(type);
     if (!ComponentClass) return null;
@@ -203,7 +199,7 @@ export function createElement(
     }
 
     component.moveTo(posX, posY);
-    addElement(state, component, saveState, saveToStorage, render);
+    addElement(state, component, ctx);
     selectElement(state, component);
 
     // If dropped inside a container, auto-adopt it (respecting nesting rules)
@@ -229,7 +225,7 @@ export function createElement(
 
     if (container) {
         container.recalculateBounds();
-        render();
+        ctx.render();
     }
 
     return component;
@@ -238,27 +234,23 @@ export function createElement(
 export function addElement(
     state: EditorState,
     component: DiagramElement,
-    saveState: () => void,
-    saveToStorage: () => void,
-    render: () => void
+    ctx: EditorContext
 ): void {
-    saveState();
+    ctx.saveState();
     state.elements.push(component);
     updateWorldSize(state);
-    render();
-    saveToStorage();
+    ctx.render();
+    ctx.saveToStorage();
 }
 
 export function removeComponent(
     state: EditorState,
     component: DiagramElement,
-    saveState: () => void,
-    saveToStorage: () => void,
-    render: () => void
+    ctx: EditorContext
 ): void {
     const index = state.elements.indexOf(component);
     if (index > -1) {
-        saveState();
+        ctx.saveState();
 
         if (component instanceof Module || component instanceof Domain || component instanceof System) {
             for (const child of component.children) {
@@ -282,8 +274,8 @@ export function removeComponent(
             conn => conn.sourcePoint.componentId !== component.id &&
                 conn.targetPoint.componentId !== component.id
         );
-        render();
-        saveToStorage();
+        ctx.render();
+        ctx.saveToStorage();
     }
 }
 
@@ -293,14 +285,12 @@ export function removeComponent(
  */
 export function groupIntoModule(
     state: EditorState,
-    saveState: () => void,
-    saveToStorage: () => void,
-    render: () => void
+    ctx: EditorContext
 ): void {
     const targets = state.selectedElements;
     if (targets.length < 2) return;
 
-    saveState();
+    ctx.saveState();
 
     const snap = (v: number) => Math.round(v / GRID_SIZE) * GRID_SIZE;
     const PADDING = 24;
@@ -339,6 +329,6 @@ export function groupIntoModule(
     module.selected = true;
     state.selectedElements = [module];
 
-    saveToStorage();
-    render();
+    ctx.saveToStorage();
+    ctx.render();
 }

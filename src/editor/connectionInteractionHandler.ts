@@ -4,63 +4,55 @@
  */
 
 import { Connection, getControlPoint, controlDistance, type Point } from '../canvas/index';
-import type { EditorState } from './editorState';
+import type { EditorContext, EditorState } from './editorState';
 import { selectConnection } from './selectionHandler';
 
 export function resetConnectionCurve(
     state: EditorState,
     connection: Connection,
-    saveState: () => void,
-    saveToStorage: () => void,
-    render: () => void
+    ctx: EditorContext
 ): void {
-    saveState();
+    ctx.saveState();
     connection.customControlPoint1 = null;
     connection.customControlPoint2 = null;
     connection.intermediateAnchors = [];
-    render();
-    saveToStorage();
+    ctx.render();
+    ctx.saveToStorage();
 }
 
 export function addIntermediateAnchor(
     state: EditorState,
     connection: Connection,
     clickPos: Point,
-    saveState: () => void,
-    saveToStorage: () => void,
-    render: () => void
+    ctx: EditorContext
 ): void {
-    saveState();
+    ctx.saveState();
     connection.addIntermediateAnchor(clickPos, state.elements);
     selectConnection(state, connection);
-    render();
-    saveToStorage();
+    ctx.render();
+    ctx.saveToStorage();
 }
 
 export function removeIntermediateAnchor(
     state: EditorState,
     connection: Connection,
     anchorIndex: number,
-    saveState: () => void,
-    saveToStorage: () => void,
-    render: () => void
+    ctx: EditorContext
 ): void {
-    saveState();
+    ctx.saveState();
     connection.intermediateAnchors.splice(anchorIndex, 1);
     selectConnection(state, connection);
-    render();
-    saveToStorage();
+    ctx.render();
+    ctx.saveToStorage();
 }
 
 export function customizeConnectionCurve(
     state: EditorState,
     connection: Connection,
-    saveState: () => void,
-    saveToStorage: () => void,
-    render: () => void
+    ctx: EditorContext
 ): void {
     if (!connection.customControlPoint1 || !connection.customControlPoint2) {
-        saveState();
+        ctx.saveState();
 
         const sourceComponent = state.elements.find(c => c.id === connection.sourcePoint.componentId);
         const targetComponent = state.elements.find(c => c.id === connection.targetPoint.componentId);
@@ -73,28 +65,26 @@ export function customizeConnectionCurve(
         connection.customControlPoint1 = getControlPoint(sourcePos, connection.sourcePoint.side, ctrlDist);
         connection.customControlPoint2 = getControlPoint(targetPos, connection.targetPoint.side, ctrlDist);
 
-        saveToStorage();
+        ctx.saveToStorage();
     }
 
     selectConnection(state, connection);
-    render();
+    ctx.render();
 }
 
 export function removeConnection(
     state: EditorState,
     connection: Connection,
-    saveState: () => void,
-    saveToStorage: () => void,
-    render: () => void
+    ctx: EditorContext
 ): void {
     const index = state.connections.indexOf(connection);
     if (index > -1) {
-        saveState();
+        ctx.saveState();
         state.connections.splice(index, 1);
         if (state.selectedConnection === connection) {
             state.selectedConnection = null;
         }
-        render();
-        saveToStorage();
+        ctx.render();
+        ctx.saveToStorage();
     }
 }

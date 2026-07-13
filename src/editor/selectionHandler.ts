@@ -17,7 +17,7 @@ import {
     type DiagramElement,
     type Point
 } from '../canvas/index';
-import type { EditorState, HoverConnectionPoint } from './editorState';
+import type { EditorContext, EditorState, HoverConnectionPoint } from './editorState';
 
 export function findComponentAtPoint(state: EditorState, x: number, y: number): DiagramElement | null {
     let foundContainer: Module | Domain | System | null = null;
@@ -181,9 +181,9 @@ export function selectConnection(state: EditorState, connection: Connection | nu
     }
 }
 
-export function alignSelectedElementsVertically(state: EditorState, saveState: () => void, saveToStorage: () => void, render: () => void): void {
+export function alignSelectedElementsVertically(state: EditorState, ctx: EditorContext): void {
     if (state.selectedElements.length < 2) return;
-    saveState();
+    ctx.saveState();
 
     let totalCenterY = 0;
     for (const el of state.selectedElements) {
@@ -195,13 +195,13 @@ export function alignSelectedElementsVertically(state: EditorState, saveState: (
         el.y = avgCenterY - el.height / 2;
     }
 
-    render();
-    saveToStorage();
+    ctx.render();
+    ctx.saveToStorage();
 }
 
-export function alignSelectedElementsHorizontally(state: EditorState, saveState: () => void, saveToStorage: () => void, render: () => void): void {
+export function alignSelectedElementsHorizontally(state: EditorState, ctx: EditorContext): void {
     if (state.selectedElements.length < 2) return;
-    saveState();
+    ctx.saveState();
 
     let totalCenterX = 0;
     for (const el of state.selectedElements) {
@@ -213,8 +213,8 @@ export function alignSelectedElementsHorizontally(state: EditorState, saveState:
         el.x = avgCenterX - el.width / 2;
     }
 
-    render();
-    saveToStorage();
+    ctx.render();
+    ctx.saveToStorage();
 }
 
 export function getSortedComponentsForRendering(state: EditorState): DiagramElement[] {

@@ -117,6 +117,18 @@ export interface EditorState {
     isDraggingMinimap: boolean;
 }
 
+/**
+ * The three side-effect callbacks that nearly every mutating handler needs:
+ * push an undo snapshot, persist to storage, and repaint. Bundled into one
+ * object so handler signatures stay readable instead of threading three
+ * separate closures through every call.
+ */
+export interface EditorContext {
+    saveState: () => void;
+    saveToStorage: () => void;
+    render: () => void;
+}
+
 // Helpers
 export function isDragOperation(state: EditorState): boolean {
     return state.isDragging || state.isBoxSelecting || state.isConnecting ||

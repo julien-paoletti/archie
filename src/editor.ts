@@ -19,7 +19,7 @@ import {
 
 import type { EditorOptions, SerializedComponent, SerializedDiagram } from './editor/editorTypes';
 import type { ClipboardData } from './editor/clipboardHandler';
-import type { EditorState } from './editor/editorState';
+import type { EditorContext, EditorState } from './editor/editorState';
 
 import { ContextMenuHandler } from './editor/contextMenuHandler';
 import { InlineEditController } from './editor/inlineEditController';
@@ -41,6 +41,9 @@ export type { EditorOptions } from './editor/editorTypes';
 
 export class Editor {
     private state: EditorState;
+    private ctx: EditorContext;
+    // Silent context for batched mutations that snapshot/persist/render once at the end.
+    private readonly noopCtx: EditorContext = { saveState: () => {}, saveToStorage: () => {}, render: () => {} };
     private contextMenuHandler: ContextMenuHandler;
     private inlineEditController: InlineEditController;
     private serializationManager: SerializationManager;
@@ -121,6 +124,12 @@ export class Editor {
             isDraggingMinimap: false
         };
 
+        this.ctx = {
+            saveState: () => this.saveState(),
+            saveToStorage: () => this.saveToStorage(),
+            render: () => this.render()
+        };
+
         this.contextMenuHandler = this.createContextMenuHandler();
         this.inlineEditController = this.createInlineEditController();
         this.serializationManager = this.createSerializationManager();
@@ -133,16 +142,16 @@ export class Editor {
             startTitleEdit: (el) => this.inlineEditController.startTitleEdit(el),
             startConnectionLabelEdit: (conn) => this.inlineEditController.startConnectionLabelEdit(conn),
             startDescriptionEdit: (comp) => this.inlineEditController.startDescriptionEdit(comp),
-            addIntermediateAnchor: (conn, pos) => connection.addIntermediateAnchor(this.state, conn, pos, () => this.saveState(), () => this.saveToStorage(), () => this.render()),
-            removeIntermediateAnchor: (conn, idx) => connection.removeIntermediateAnchor(this.state, conn, idx, () => this.saveState(), () => this.saveToStorage(), () => this.render()),
-            resetConnectionCurve: (conn) => connection.resetConnectionCurve(this.state, conn, () => this.saveState(), () => this.saveToStorage(), () => this.render()),
+            addIntermediateAnchor: (conn, pos) => connection.addIntermediateAnchor(this.state, conn, pos, this.ctx),
+            removeIntermediateAnchor: (conn, idx) => connection.removeIntermediateAnchor(this.state, conn, idx, this.ctx),
+            resetConnectionCurve: (conn) => connection.resetConnectionCurve(this.state, conn, this.ctx),
             reverseConnection: (conn) => {
                 this.saveState();
                 conn.reverse();
                 this.saveToStorage();
                 this.render();
             },
-            removeConnection: (conn) => connection.removeConnection(this.state, conn, () => this.saveState(), () => this.saveToStorage(), () => this.render()),
+            removeConnection: (conn) => connection.removeConnection(this.state, conn, this.ctx),
             changeBorderColor: (el, color) => {
                 this.saveState();
                 if (el instanceof Port) {
@@ -224,13 +233,13 @@ export class Editor {
                 this.render();
             },
             startPortNumberEdit: (port) => this.inlineEditController.startPortNumberEdit(port),
-            alignSelectedVertically: () => selection.alignSelectedElementsVertically(this.state, () => this.saveState(), () => this.saveToStorage(), () => this.render()),
-            alignSelectedHorizontally: () => selection.alignSelectedElementsHorizontally(this.state, () => this.saveState(), () => this.saveToStorage(), () => this.render()),
-            groupSelectedIntoModule: () => dragDrop.groupIntoModule(this.state, () => this.saveState(), () => this.saveToStorage(), () => this.render()),
+            alignSelectedVertically: () => selection.alignSelectedElementsVertically(this.state, this.ctx),
+            alignSelectedHorizontally: () => selection.alignSelectedElementsHorizontally(this.state, this.ctx),
+            groupSelectedIntoModule: () => dragDrop.groupIntoModule(this.state, this.ctx),
             getSelectedElements: () => this.state.selectedElements,
             getElements: () => this.state.elements,
             addPortToConnection: (conn, end) => this.addPortToConnection(conn, end),
-            removeElement: (el) => dragDrop.removeComponent(this.state, el, () => this.saveState(), () => this.saveToStorage(), () => this.render())
+            removeElement: (el) => dragDrop.removeComponent(this.state, el, this.ctx)
         });
     }
 
@@ -302,7 +311,7 @@ export class Editor {
         window.addEventListener('keyup', (e) => keyboard.handleKeyUp(s, e));
 
         s.canvas.addEventListener('dragover', (e) => dragDrop.handleDragOver(e));
-        s.canvas.addEventListener('drop', (e) => dragDrop.handleDrop(s, e, () => this.saveState(), () => this.saveToStorage(), () => this.render()));
+        s.canvas.addEventListener('drop', (e) => dragDrop.handleDrop(s, e, this.ctx));
         s.canvas.addEventListener('dragleave', () => dragDrop.handleDragLeave());
 
         s.canvas.addEventListener('contextmenu', (e) => this.handleContextMenu(e));
@@ -385,19 +394,19 @@ export class Editor {
 
     // Public API
     createElement(type: string, x: number, y: number): DiagramElement | null {
-        return dragDrop.createElement(this.state, type, x, y, () => this.saveState(), () => this.saveToStorage(), () => this.render());
+        return dragDrop.createElement(this.state, type, x, y, this.ctx);
     }
     addElement(component: DiagramElement): void {
-        dragDrop.addElement(this.state, component, () => this.saveState(), () => this.saveToStorage(), () => this.render());
+        dragDrop.addElement(this.state, component, this.ctx);
     }
     removeComponent(component: DiagramElement): void {
-        dragDrop.removeComponent(this.state, component, () => this.saveState(), () => this.saveToStorage(), () => this.render());
+        dragDrop.removeComponent(this.state, component, this.ctx);
     }
     removeComponents(components: DiagramElement[]): void {
         if (components.length === 0) return;
         this.saveState();
         for (const component of components) {
-            dragDrop.removeComponent(this.state, component, () => {}, () => {}, () => {});
+            dragDrop.removeComponent(this.state, component, this.noopCtx);
         }
         this.saveToStorage();
         this.render();
@@ -409,7 +418,7 @@ export class Editor {
     selectConnection(conn: Connection | null): void { selection.selectConnection(this.state, conn); }
     getSelectedConnection(): Connection | null { return this.state.selectedConnection; }
     removeConnection(conn: Connection): void {
-        connection.removeConnection(this.state, conn, () => this.saveState(), () => this.saveToStorage(), () => this.render());
+        connection.removeConnection(this.state, conn, this.ctx);
     }
 
     private addPortToConnection(conn: Connection, end: 'source' | 'target'): void {
@@ -478,13 +487,13 @@ export class Editor {
         this.saveState();
         const toRemove = [...this.state.selectedElements];
         for (const el of toRemove) {
-            dragDrop.removeComponent(this.state, el, () => {}, () => {}, () => {});
+            dragDrop.removeComponent(this.state, el, this.noopCtx);
         }
         this.saveToStorage();
         this.render();
         return true;
     }
-    paste(): boolean { return clipboard.paste(this.state, this.clipboardData, () => this.saveState(), () => this.saveToStorage(), () => this.render()); }
+    paste(): boolean { return clipboard.paste(this.state, this.clipboardData, this.ctx); }
     canPaste(): boolean { return this.clipboardData.elements.length > 0; }
     exportPNG(): void { clipboard.exportPNG(this.state); }
     copyPNG(onDone: (err?: Error) => void): void { clipboard.copyPNG(this.state, onDone); }
