@@ -28,7 +28,7 @@ export interface EditState {
     titleInput: HTMLInputElement | null;
     editingConnection: Connection | null;
     connectionLabelInput: HTMLInputElement | null;
-    editingDescriptionComponent: Component | null;
+    editingDescriptionComponent: Component | Module | null;
     descriptionInput: HTMLInputElement | null;
     editingNote: Note | null;
     noteTextarea: HTMLTextAreaElement | null;

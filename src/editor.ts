@@ -369,7 +369,8 @@ export class Editor {
     }
 
     // Convenience methods
-    private render(): void {
+    /** Re-render the canvas, inline-edit overlays, and minimap. Public so the app shell can request repaints. */
+    render(): void {
         rendering.render(this.state);
         this.inlineEditController.updatePositions();
         minimap.renderMinimap(this.state);

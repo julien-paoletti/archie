@@ -242,8 +242,8 @@ export class Connection {
         }
     }
 
-    toJSON(): ConnectionOptions {
-        const json: ConnectionOptions = {
+    toJSON(): ConnectionOptions & { id: string } {
+        const json: ConnectionOptions & { id: string } = {
             id: this.id,
             sourcePoint: { ...this.sourcePoint },
             targetPoint: { ...this.targetPoint },

@@ -9,7 +9,8 @@
     "build:viewer": "bun run scripts/build-viewer.ts",
     "serve": "bun --bun run scripts/serve.ts",
     "patch": "bun run scripts/patch-version.ts",
-    "test": "bun test"
+    "test": "bun test",
+    "check": "bunx tsc --noEmit && bun test"
   },
   "devDependencies": {
     "@types/bun": "latest"

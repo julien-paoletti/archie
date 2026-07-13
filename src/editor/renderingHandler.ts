@@ -7,6 +7,7 @@ import {
     CONNECTION_POINT_RADIUS,
     Domain,
     Module,
+    System,
     getControlPoint,
     controlDistance,
     type ConnectionPoint,
@@ -89,13 +90,15 @@ function drawBoxSelection(state: EditorState, start: Point, current: Point): voi
     ctx.restore();
 }
 
-function drawDropTargetHighlight(state: EditorState, container: Module | Domain): void {
+function drawDropTargetHighlight(state: EditorState, container: Module | Domain | System): void {
     const ctx = state.ctx;
     ctx.save();
 
-    ctx.strokeStyle = container instanceof Domain
-        ? 'rgba(59, 130, 246, 0.8)'
-        : 'rgba(20, 184, 166, 0.8)';
+    ctx.strokeStyle = container instanceof System
+        ? 'rgba(99, 102, 241, 0.8)'
+        : container instanceof Domain
+            ? 'rgba(59, 130, 246, 0.8)'
+            : 'rgba(20, 184, 166, 0.8)';
     ctx.lineWidth = 3;
     ctx.setLineDash([8, 4]);
     ctx.strokeRect(container.x, container.y, container.width, container.height);
