@@ -6,14 +6,14 @@
 import type {
     CanvasRenderer,
     Connection,
-    ConnectionPoint,
     DiagramElement,
     Domain,
     Module,
     System,
-    Point,
-    ResizeHandle
+    Point
 } from '../canvas/index';
+import type { InteractionMode } from './interactionMode';
+import { isDragOperation as isDragOperationMode } from './interactionMode';
 
 export interface HoverConnectionPoint {
     point: Point;
@@ -41,53 +41,12 @@ export interface EditorState {
     gridSize: number;
     snapToGrid: boolean;
 
-    // Drag
-    isDragging: boolean;
-    dragOffset: Point;
-    draggedComponent: DiagramElement | null;
-    dragStartPos: Point | null;
-    isCloneDrag: boolean;
+    // The single active interaction. Replaces the old flag soup + companion
+    // fields; each mode variant carries its own data. See interactionMode.ts.
+    mode: InteractionMode;
 
-    // Resize
-    isResizing: boolean;
-    resizeHandle: ResizeHandle;
-    resizeStartPos: Point;
-    resizeStartBounds: { x: number; y: number; width: number; height: number };
-
-    // Connection creation
-    isConnecting: boolean;
-    sourceConnectionPoint: ConnectionPoint | null;
-    connectionDragStartPos: Point | null;
+    // Connection point currently hovered (transient, independent of mode)
     hoverConnectionPoint: HoverConnectionPoint | null;
-
-    // Connection point dragging
-    isDraggingConnectionPoint: boolean;
-    draggedConnection: Connection | null;
-    draggedConnectionEnd: 'source' | 'target' | null;
-
-    // Control point dragging
-    isDraggingControlPoint: boolean;
-    draggedControlConnection: Connection | null;
-    draggedControlPointType: 'source' | 'target' | null;
-
-    // Connection slide
-    isDraggingConnectionSlide: boolean;
-    slideConnection: Connection | null;
-    slideStartY: number;
-    slideSourceStart: ConnectionPoint | null;
-    slideTargetStart: ConnectionPoint | null;
-
-    // Intermediate anchors
-    isDraggingIntermediateAnchor: boolean;
-    isDraggingIntermediateHandle: boolean;
-    draggedAnchorConnection: Connection | null;
-    draggedAnchorIndex: number | null;
-    draggedHandleType: 'in' | 'out' | null;
-
-    // Box selection
-    isBoxSelecting: boolean;
-    boxSelectStart: Point | null;
-    boxSelectCurrent: Point | null;
 
     // Container drop
     potentialDropTarget: Module | Domain | System | null;
@@ -131,10 +90,7 @@ export interface EditorContext {
 
 // Helpers
 export function isDragOperation(state: EditorState): boolean {
-    return state.isDragging || state.isBoxSelecting || state.isConnecting ||
-        state.isDraggingConnectionPoint || state.isDraggingControlPoint ||
-        state.isDraggingIntermediateAnchor || state.isDraggingIntermediateHandle ||
-        state.isDraggingConnectionSlide;
+    return isDragOperationMode(state.mode);
 }
 
 // Constants

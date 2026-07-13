@@ -20,6 +20,7 @@ import {
 import type { EditorOptions, SerializedComponent, SerializedDiagram } from './editor/editorTypes';
 import type { ClipboardData } from './editor/clipboardHandler';
 import type { EditorContext, EditorState } from './editor/editorState';
+import { IDLE } from './editor/interactionMode';
 
 import { ContextMenuHandler } from './editor/contextMenuHandler';
 import { InlineEditController } from './editor/inlineEditController';
@@ -75,38 +76,8 @@ export class Editor {
             worldHeight: containerRect.height,
             gridSize: options.gridSize ?? 24,
             snapToGrid: options.snapToGrid !== false,
-            isDragging: false,
-            dragOffset: { x: 0, y: 0 },
-            draggedComponent: null,
-            dragStartPos: null,
-            isCloneDrag: false,
-            isResizing: false,
-            resizeHandle: null,
-            resizeStartPos: { x: 0, y: 0 },
-            resizeStartBounds: { x: 0, y: 0, width: 0, height: 0 },
-            isConnecting: false,
-            sourceConnectionPoint: null,
-            connectionDragStartPos: null,
+            mode: IDLE,
             hoverConnectionPoint: null,
-            isDraggingConnectionPoint: false,
-            draggedConnection: null,
-            draggedConnectionEnd: null,
-            isDraggingControlPoint: false,
-            draggedControlConnection: null,
-            draggedControlPointType: null,
-            isDraggingConnectionSlide: false,
-            slideConnection: null,
-            slideStartY: 0,
-            slideSourceStart: null,
-            slideTargetStart: null,
-            isDraggingIntermediateAnchor: false,
-            isDraggingIntermediateHandle: false,
-            draggedAnchorConnection: null,
-            draggedAnchorIndex: null,
-            draggedHandleType: null,
-            isBoxSelecting: false,
-            boxSelectStart: null,
-            boxSelectCurrent: null,
             potentialDropTarget: null,
             scale: 1,
             panOffset: { x: 0, y: 0 },

@@ -10,7 +10,8 @@ import {
     Module,
     Port,
     System,
-    type DiagramElement
+    type DiagramElement,
+    type Point
 } from '../canvas/index';
 import { isDragOperation, type EditorState } from './editorState';
 import { getResizeCursor } from './cursorUtils';
@@ -65,9 +66,11 @@ export function handleMouseDown(state: EditorState, e: MouseEvent, callbacks: Mo
         const controlPoint = state.selectedConnection.getControlPointAtPosition(pos.x, pos.y, state.elements);
         if (controlPoint) {
             callbacks.saveState();
-            state.isDraggingControlPoint = true;
-            state.draggedControlConnection = state.selectedConnection;
-            state.draggedControlPointType = controlPoint;
+            state.mode = {
+                kind: 'movingControlPoint',
+                connection: state.selectedConnection,
+                pointType: controlPoint
+            };
             state.canvas.style.cursor = 'move';
             callbacks.render();
             return;
@@ -76,10 +79,12 @@ export function handleMouseDown(state: EditorState, e: MouseEvent, callbacks: Mo
         const anchorHandle = state.selectedConnection.getIntermediateAnchorHandleAtPosition(pos.x, pos.y);
         if (anchorHandle) {
             callbacks.saveState();
-            state.isDraggingIntermediateHandle = true;
-            state.draggedAnchorConnection = state.selectedConnection;
-            state.draggedAnchorIndex = anchorHandle.anchorIndex;
-            state.draggedHandleType = anchorHandle.handleType;
+            state.mode = {
+                kind: 'draggingAnchorHandle',
+                connection: state.selectedConnection,
+                index: anchorHandle.anchorIndex,
+                handleType: anchorHandle.handleType
+            };
             state.canvas.style.cursor = 'move';
             callbacks.render();
             return;
@@ -88,9 +93,11 @@ export function handleMouseDown(state: EditorState, e: MouseEvent, callbacks: Mo
         const anchorIndex = state.selectedConnection.getIntermediateAnchorAtPosition(pos.x, pos.y);
         if (anchorIndex !== null) {
             callbacks.saveState();
-            state.isDraggingIntermediateAnchor = true;
-            state.draggedAnchorConnection = state.selectedConnection;
-            state.draggedAnchorIndex = anchorIndex;
+            state.mode = {
+                kind: 'draggingAnchor',
+                connection: state.selectedConnection,
+                index: anchorIndex
+            };
             state.canvas.style.cursor = 'move';
             callbacks.render();
             return;
@@ -103,12 +110,14 @@ export function handleMouseDown(state: EditorState, e: MouseEvent, callbacks: Mo
         const handle = selectedComponent.getResizeHandleAtPoint(pos.x, pos.y);
         if (handle) {
             callbacks.saveState();
-            state.isResizing = true;
-            state.resizeHandle = handle;
-            state.resizeStartPos = { x: pos.x, y: pos.y };
-            state.resizeStartBounds = {
-                x: selectedComponent.x, y: selectedComponent.y,
-                width: selectedComponent.width, height: selectedComponent.height
+            state.mode = {
+                kind: 'resizing',
+                handle,
+                startPos: { x: pos.x, y: pos.y },
+                startBounds: {
+                    x: selectedComponent.x, y: selectedComponent.y,
+                    width: selectedComponent.width, height: selectedComponent.height
+                }
             };
             state.canvas.style.cursor = getResizeCursor(handle);
             return;
@@ -119,9 +128,11 @@ export function handleMouseDown(state: EditorState, e: MouseEvent, callbacks: Mo
     const existingPoint = findConnectionPointAtPosition(state, pos.x, pos.y);
     if (existingPoint) {
         callbacks.saveState();
-        state.isDraggingConnectionPoint = true;
-        state.draggedConnection = existingPoint.connection;
-        state.draggedConnectionEnd = existingPoint.end;
+        state.mode = {
+            kind: 'movingConnectionPoint',
+            connection: existingPoint.connection,
+            end: existingPoint.end
+        };
         selectConnection(state, existingPoint.connection);
         selectElement(state, null);
         state.canvas.style.cursor = 'crosshair';
@@ -135,11 +146,13 @@ export function handleMouseDown(state: EditorState, e: MouseEvent, callbacks: Mo
         callbacks.saveState();
         selectConnection(state, connection);
         clearSelection(state);
-        state.isDraggingConnectionSlide = true;
-        state.slideConnection = connection;
-        state.slideStartY = pos.y;
-        state.slideSourceStart = { ...connection.sourcePoint };
-        state.slideTargetStart = { ...connection.targetPoint };
+        state.mode = {
+            kind: 'slidingConnection',
+            connection,
+            startY: pos.y,
+            sourceStart: { ...connection.sourcePoint },
+            targetStart: { ...connection.targetPoint }
+        };
         state.canvas.style.cursor = 'ns-resize';
         callbacks.render();
         return;
@@ -151,15 +164,17 @@ export function handleMouseDown(state: EditorState, e: MouseEvent, callbacks: Mo
         ? state.elements.find(el => el.id === state.hoverConnectionPoint!.componentId)
         : null;
     if (state.hoverConnectionPoint && !e.ctrlKey && !(hoverSource instanceof Port)) {
-        state.isConnecting = true;
-        state.sourceConnectionPoint = {
-            x: state.hoverConnectionPoint.point.x,
-            y: state.hoverConnectionPoint.point.y,
-            componentId: state.hoverConnectionPoint.componentId,
-            side: state.hoverConnectionPoint.side,
-            offset: state.hoverConnectionPoint.offset
+        state.mode = {
+            kind: 'connecting',
+            source: {
+                x: state.hoverConnectionPoint.point.x,
+                y: state.hoverConnectionPoint.point.y,
+                componentId: state.hoverConnectionPoint.componentId,
+                side: state.hoverConnectionPoint.side,
+                offset: state.hoverConnectionPoint.offset
+            },
+            dragStartPos: { x: pos.x, y: pos.y }
         };
-        state.connectionDragStartPos = { x: pos.x, y: pos.y };
         state.canvas.style.cursor = 'crosshair';
         callbacks.render();
         return;
@@ -185,9 +200,11 @@ export function handleMouseDown(state: EditorState, e: MouseEvent, callbacks: Mo
         }
 
         callbacks.saveState();
-        state.isDragging = true;
-        state.dragOffset = { x: pos.x - element.x, y: pos.y - element.y };
-        state.dragStartPos = { x: element.x, y: element.y };
+
+        let draggedComponent: DiagramElement;
+        let dragOffset: Point = { x: pos.x - element.x, y: pos.y - element.y };
+        const dragStartPos: Point = { x: element.x, y: element.y };
+        let isClone: boolean;
 
         // Ctrl+drag to clone
         if (e.ctrlKey) {
@@ -227,30 +244,29 @@ export function handleMouseDown(state: EditorState, e: MouseEvent, callbacks: Mo
                 for (const c of clones) c.selected = true;
 
                 const clickedClone = clones[topLevel.indexOf(element)] ?? clones[0]!;
-                state.draggedComponent = clickedClone;
-                state.dragOffset = { x: pos.x - clickedClone.x, y: pos.y - clickedClone.y };
+                draggedComponent = clickedClone;
+                dragOffset = { x: pos.x - clickedClone.x, y: pos.y - clickedClone.y };
             } else {
                 const clone = cloneDeep(element, state.elements);
-                state.draggedComponent = clone;
+                draggedComponent = clone;
                 selectElement(state, clone);
             }
-            state.isCloneDrag = true;
+            isClone = true;
         } else {
-            state.draggedComponent = element;
+            draggedComponent = element;
             if (!state.selectedElements.includes(element)) {
                 selectElement(state, element);
             }
-            state.isCloneDrag = false;
+            isClone = false;
         }
 
+        state.mode = { kind: 'dragging', component: draggedComponent, offset: dragOffset, startPos: dragStartPos, isClone };
         state.canvas.style.cursor = 'grabbing';
     } else {
         // Start box selection on empty canvas
         if (!e.shiftKey) clearSelection(state);
         selectConnection(state, null);
-        state.isBoxSelecting = true;
-        state.boxSelectStart = { x: pos.x, y: pos.y };
-        state.boxSelectCurrent = { x: pos.x, y: pos.y };
+        state.mode = { kind: 'boxSelect', start: { x: pos.x, y: pos.y }, current: { x: pos.x, y: pos.y } };
     }
 
     callbacks.render();

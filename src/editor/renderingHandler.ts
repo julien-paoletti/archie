@@ -41,12 +41,12 @@ export function render(state: EditorState): void {
         drawConnectionPoint(state.ctx, state.hoverConnectionPoint.point);
     }
 
-    if (state.isConnecting && state.sourceConnectionPoint && state.mousePos) {
-        drawConnectionInProgress(state);
+    if (state.mode.kind === 'connecting' && state.mousePos) {
+        drawConnectionInProgress(state, state.mode.source);
     }
 
-    if (state.isBoxSelecting && state.boxSelectStart && state.boxSelectCurrent) {
-        drawBoxSelection(state);
+    if (state.mode.kind === 'boxSelect') {
+        drawBoxSelection(state, state.mode.start, state.mode.current);
     }
 
     state.ctx.restore();
@@ -72,14 +72,12 @@ function drawZoomIndicator(state: EditorState): void {
     ctx.restore();
 }
 
-function drawBoxSelection(state: EditorState): void {
-    if (!state.boxSelectStart || !state.boxSelectCurrent) return;
-
+function drawBoxSelection(state: EditorState, start: Point, current: Point): void {
     const ctx = state.ctx;
-    const x = Math.min(state.boxSelectStart.x, state.boxSelectCurrent.x);
-    const y = Math.min(state.boxSelectStart.y, state.boxSelectCurrent.y);
-    const width = Math.abs(state.boxSelectCurrent.x - state.boxSelectStart.x);
-    const height = Math.abs(state.boxSelectCurrent.y - state.boxSelectStart.y);
+    const x = Math.min(start.x, current.x);
+    const y = Math.min(start.y, current.y);
+    const width = Math.abs(current.x - start.x);
+    const height = Math.abs(current.y - start.y);
 
     ctx.save();
     ctx.fillStyle = 'rgba(79, 70, 229, 0.1)';
@@ -152,16 +150,16 @@ export function drawConnectionPoint(ctx: CanvasRenderingContext2D, pos: Point): 
     ctx.restore();
 }
 
-function drawConnectionInProgress(state: EditorState): void {
-    if (!state.sourceConnectionPoint || !state.mousePos) return;
+function drawConnectionInProgress(state: EditorState, source: ConnectionPoint): void {
+    if (!state.mousePos) return;
 
     const ctx = state.ctx;
-    const sourceComponent = state.elements.find(c => c.id === state.sourceConnectionPoint!.componentId);
+    const sourceComponent = state.elements.find(c => c.id === source.componentId);
     if (!sourceComponent) return;
 
     const sourcePos = sourceComponent.getPointOnBorder(
-        state.sourceConnectionPoint.side,
-        state.sourceConnectionPoint.offset
+        source.side,
+        source.offset
     );
 
     ctx.save();
@@ -178,7 +176,7 @@ function drawConnectionInProgress(state: EditorState): void {
         : state.mousePos;
 
     const ctrlDist = controlDistance(sourcePos, targetPos);
-    const sourceControl = getControlPoint(sourcePos, state.sourceConnectionPoint.side, ctrlDist);
+    const sourceControl = getControlPoint(sourcePos, source.side, ctrlDist);
 
     let targetControl: Point;
     if (state.hoverConnectionPoint) {

@@ -96,7 +96,8 @@ export function checkAndExtendWorld(state: EditorState, x: number, y: number): b
 }
 
 export function handleWheel(state: EditorState, e: WheelEvent, render: () => void, saveToStorage: () => void): void {
-    if (state.isDragging || state.isResizing || state.isConnecting || state.isBoxSelecting || state.isDraggingConnectionSlide) {
+    const k = state.mode.kind;
+    if (k === 'dragging' || k === 'resizing' || k === 'connecting' || k === 'boxSelect' || k === 'slidingConnection') {
         e.preventDefault();
         return;
     }
@@ -164,7 +165,8 @@ export function startAutoScroll(
     if (state.autoScrollAnimationId !== null) return;
 
     const tick = () => {
-        if (!state.isDragging && !state.isBoxSelecting && !state.isConnecting && !state.isDraggingConnectionPoint) {
+        const mode = state.mode;
+        if (mode.kind !== 'dragging' && mode.kind !== 'boxSelect' && mode.kind !== 'connecting' && mode.kind !== 'movingConnectionPoint') {
             stopAutoScroll(state);
             return;
         }
@@ -175,26 +177,27 @@ export function startAutoScroll(
             state.panOffset.x += delta.x;
             state.panOffset.y += delta.y;
 
-            if (state.isDragging && state.draggedComponent) {
+            if (mode.kind === 'dragging') {
+                const draggedComponent = mode.component;
                 const rect = state.canvas.getBoundingClientRect();
                 const screenX = state.lastScreenMousePos.x - rect.left;
                 const screenY = state.lastScreenMousePos.y - rect.top;
                 const pos = screenToWorld(state, screenX, screenY);
 
-                let newX = pos.x - state.dragOffset.x;
-                let newY = pos.y - state.dragOffset.y;
+                let newX = pos.x - mode.offset.x;
+                let newY = pos.y - mode.offset.y;
 
-                if (state.snapToGrid && !(state.draggedComponent instanceof NumberedDot) && !(state.draggedComponent instanceof Tag) && !(state.draggedComponent instanceof Port)) {
+                if (state.snapToGrid && !(draggedComponent instanceof NumberedDot) && !(draggedComponent instanceof Tag) && !(draggedComponent instanceof Port)) {
                     newX = Math.round(newX / state.gridSize) * state.gridSize;
                     newY = Math.round(newY / state.gridSize) * state.gridSize;
                 }
 
-                const dx = newX - state.draggedComponent.x;
-                const dy = newY - state.draggedComponent.y;
-                state.draggedComponent.moveTo(newX, newY);
+                const dx = newX - draggedComponent.x;
+                const dy = newY - draggedComponent.y;
+                draggedComponent.moveTo(newX, newY);
 
                 for (const comp of state.selectedElements) {
-                    if (comp !== state.draggedComponent) {
+                    if (comp !== draggedComponent) {
                         const parentIsSelected = comp.parentId &&
                             state.selectedElements.some(s => s.id === comp.parentId);
                         if (!parentIsSelected) {
@@ -203,25 +206,25 @@ export function startAutoScroll(
                     }
                 }
 
-                const centerX = state.draggedComponent.x + state.draggedComponent.width / 2;
-                const centerY = state.draggedComponent.y + state.draggedComponent.height / 2;
+                const centerX = draggedComponent.x + draggedComponent.width / 2;
+                const centerY = draggedComponent.y + draggedComponent.height / 2;
 
-                if (state.draggedComponent instanceof System) {
+                if (draggedComponent instanceof System) {
                     state.potentialDropTarget = null;
-                } else if (state.draggedComponent instanceof Domain) {
-                    state.potentialDropTarget = findSystemAtPoint(centerX, centerY, state.draggedComponent);
-                } else if (state.draggedComponent instanceof Module) {
-                    state.potentialDropTarget = findDomainAtPoint(centerX, centerY, state.draggedComponent);
+                } else if (draggedComponent instanceof Domain) {
+                    state.potentialDropTarget = findSystemAtPoint(centerX, centerY, draggedComponent);
+                } else if (draggedComponent instanceof Module) {
+                    state.potentialDropTarget = findDomainAtPoint(centerX, centerY, draggedComponent);
                 } else {
-                    state.potentialDropTarget = findContainerAtPoint(centerX, centerY, state.draggedComponent);
+                    state.potentialDropTarget = findContainerAtPoint(centerX, centerY, draggedComponent);
                 }
             }
 
-            if (state.isBoxSelecting && state.boxSelectCurrent) {
+            if (mode.kind === 'boxSelect') {
                 const worldDx = -delta.x / state.scale;
                 const worldDy = -delta.y / state.scale;
-                state.boxSelectCurrent.x += worldDx;
-                state.boxSelectCurrent.y += worldDy;
+                mode.current.x += worldDx;
+                mode.current.y += worldDy;
             }
 
             render();

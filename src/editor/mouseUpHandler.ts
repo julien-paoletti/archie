@@ -15,9 +15,11 @@ import {
     System,
     Tag,
     type ConnectionPoint,
-    type DiagramElement
+    type DiagramElement,
+    type Point
 } from '../canvas/index';
 import type { EditorState } from './editorState';
+import { IDLE } from './interactionMode';
 import { screenToWorld, stopAutoScroll } from './viewportHandler';
 import { selectElement } from './selectionHandler';
 import { resolveOverlapInContainer, resolveOverlapAtLevel, snapPortToBorder } from './dragDropHandler';
@@ -39,99 +41,86 @@ export function handleMouseUp(state: EditorState, callbacks: MouseUpCallbacks): 
     }
 
     let changed = false;
+    const mode = state.mode;
 
-    if (state.isBoxSelecting && state.boxSelectStart && state.boxSelectCurrent) {
-        completeBoxSelection(state);
-        callbacks.render();
-    }
+    switch (mode.kind) {
+        case 'idle':
+            break;
 
-    if (state.isDraggingConnectionSlide) {
-        state.isDraggingConnectionSlide = false;
-        state.slideConnection = null;
-        state.slideSourceStart = null;
-        state.slideTargetStart = null;
-        state.canvas.style.cursor = 'default';
-        callbacks.render();
-        changed = true;
-    }
+        case 'boxSelect':
+            completeBoxSelection(state, mode.start, mode.current);
+            state.mode = IDLE;
+            callbacks.render();
+            break;
 
-    if (state.isDraggingControlPoint) {
-        state.isDraggingControlPoint = false;
-        state.draggedControlConnection = null;
-        state.draggedControlPointType = null;
-        state.canvas.style.cursor = 'default';
-        callbacks.render();
-        changed = true;
-    }
-
-    if (state.isDraggingIntermediateAnchor) {
-        state.isDraggingIntermediateAnchor = false;
-        state.draggedAnchorConnection = null;
-        state.draggedAnchorIndex = null;
-        state.canvas.style.cursor = 'default';
-        callbacks.render();
-        changed = true;
-    }
-
-    if (state.isDraggingIntermediateHandle) {
-        state.isDraggingIntermediateHandle = false;
-        state.draggedAnchorConnection = null;
-        state.draggedAnchorIndex = null;
-        state.draggedHandleType = null;
-        state.canvas.style.cursor = 'default';
-        callbacks.render();
-        changed = true;
-    }
-
-    if (state.isDraggingConnectionPoint && state.draggedConnection && state.draggedConnectionEnd) {
-        if (state.hoverConnectionPoint) {
-            const newPoint: ConnectionPoint = {
-                x: state.hoverConnectionPoint.point.x,
-                y: state.hoverConnectionPoint.point.y,
-                componentId: state.hoverConnectionPoint.componentId,
-                side: state.hoverConnectionPoint.side,
-                offset: state.hoverConnectionPoint.offset
-            };
-            if (state.draggedConnectionEnd === 'source') {
-                state.draggedConnection.sourcePoint = newPoint;
-            } else {
-                state.draggedConnection.targetPoint = newPoint;
-            }
+        case 'slidingConnection':
+            state.mode = IDLE;
+            state.canvas.style.cursor = 'default';
+            callbacks.render();
             changed = true;
+            break;
+
+        case 'movingControlPoint':
+            state.mode = IDLE;
+            state.canvas.style.cursor = 'default';
+            callbacks.render();
+            changed = true;
+            break;
+
+        case 'draggingAnchor':
+        case 'draggingAnchorHandle':
+            state.mode = IDLE;
+            state.canvas.style.cursor = 'default';
+            callbacks.render();
+            changed = true;
+            break;
+
+        case 'movingConnectionPoint':
+            if (state.hoverConnectionPoint) {
+                const newPoint: ConnectionPoint = {
+                    x: state.hoverConnectionPoint.point.x,
+                    y: state.hoverConnectionPoint.point.y,
+                    componentId: state.hoverConnectionPoint.componentId,
+                    side: state.hoverConnectionPoint.side,
+                    offset: state.hoverConnectionPoint.offset
+                };
+                if (mode.end === 'source') {
+                    mode.connection.sourcePoint = newPoint;
+                } else {
+                    mode.connection.targetPoint = newPoint;
+                }
+                changed = true;
+            }
+            state.mode = IDLE;
+            state.hoverConnectionPoint = null;
+            state.canvas.style.cursor = 'default';
+            callbacks.render();
+            break;
+
+        case 'connecting':
+            changed = completeConnection(state, mode.source, mode.dragStartPos, callbacks) || changed;
+            break;
+
+        case 'resizing':
+            state.mode = IDLE;
+            state.canvas.style.cursor = 'default';
+            callbacks.render();
+            changed = true;
+            break;
+
+        case 'dragging': {
+            const dragged = getDraggedComponents(state, mode.component);
+            for (const comp of dragged) {
+                if (comp instanceof Port) snapPortToBorder(comp, state.elements);
+            }
+
+            handleDragEnd(state, mode.component);
+            state.potentialDropTarget = null;
+            state.mode = IDLE;
+            state.canvas.style.cursor = state.hoveredElement ? 'grab' : 'default';
+            changed = true;
+            break;
         }
-        state.isDraggingConnectionPoint = false;
-        state.draggedConnection = null;
-        state.draggedConnectionEnd = null;
-        state.hoverConnectionPoint = null;
-        state.canvas.style.cursor = 'default';
-        callbacks.render();
-    }
-
-    if (state.isConnecting && state.sourceConnectionPoint) {
-        changed = completeConnection(state, callbacks) || changed;
-    }
-
-    if (state.isResizing) {
-        state.isResizing = false;
-        state.resizeHandle = null;
-        state.canvas.style.cursor = 'default';
-        callbacks.render();
-        changed = true;
-    }
-
-    if (state.isDragging) {
-        for (const comp of getDraggedComponents(state)) {
-            if (comp instanceof Port) snapPortToBorder(comp, state.elements);
-        }
-
-        handleDragEnd(state);
-        state.potentialDropTarget = null;
-        state.isDragging = false;
-        state.draggedComponent = null;
-        state.dragStartPos = null;
-        state.isCloneDrag = false;
-        state.canvas.style.cursor = state.hoveredElement ? 'grab' : 'default';
-        changed = true;
     }
 
     if (changed) {
@@ -139,11 +128,11 @@ export function handleMouseUp(state: EditorState, callbacks: MouseUpCallbacks): 
     }
 }
 
-function completeBoxSelection(state: EditorState): void {
-    const boxLeft = Math.min(state.boxSelectStart!.x, state.boxSelectCurrent!.x);
-    const boxTop = Math.min(state.boxSelectStart!.y, state.boxSelectCurrent!.y);
-    const boxRight = Math.max(state.boxSelectStart!.x, state.boxSelectCurrent!.x);
-    const boxBottom = Math.max(state.boxSelectStart!.y, state.boxSelectCurrent!.y);
+function completeBoxSelection(state: EditorState, start: Point, current: Point): void {
+    const boxLeft = Math.min(start.x, current.x);
+    const boxTop = Math.min(start.y, current.y);
+    const boxRight = Math.max(start.x, current.x);
+    const boxBottom = Math.max(start.y, current.y);
 
     for (const component of state.elements) {
         const fitsInside =
@@ -158,28 +147,30 @@ function completeBoxSelection(state: EditorState): void {
         }
     }
 
-    state.isBoxSelecting = false;
-    state.boxSelectStart = null;
-    state.boxSelectCurrent = null;
     state.canvas.style.cursor = 'default';
 }
 
-function completeConnection(state: EditorState, callbacks: MouseUpCallbacks): boolean {
+function completeConnection(
+    state: EditorState,
+    source: ConnectionPoint,
+    dragStartPos: Point | null,
+    callbacks: MouseUpCallbacks
+): boolean {
     const minDragDist = 10;
     const rect = state.canvas.getBoundingClientRect();
     const mouseWorldPos = screenToWorld(state, state.lastScreenMousePos.x - rect.left, state.lastScreenMousePos.y - rect.top);
-    const dragDx = state.connectionDragStartPos ? mouseWorldPos.x - state.connectionDragStartPos.x : 0;
-    const dragDy = state.connectionDragStartPos ? mouseWorldPos.y - state.connectionDragStartPos.y : 0;
+    const dragDx = dragStartPos ? mouseWorldPos.x - dragStartPos.x : 0;
+    const dragDy = dragStartPos ? mouseWorldPos.y - dragStartPos.y : 0;
     const dragDist = Math.sqrt(dragDx * dragDx + dragDy * dragDy);
 
     let changed = false;
     if (state.hoverConnectionPoint && dragDist >= minDragDist) {
         callbacks.saveState();
-        const sourceEl = state.elements.find(el => el.id === state.sourceConnectionPoint!.componentId);
+        const sourceEl = state.elements.find(el => el.id === source.componentId);
         const targetEl = state.elements.find(el => el.id === state.hoverConnectionPoint!.componentId);
         const involvesNote = sourceEl instanceof Note || targetEl instanceof Note;
         const connection = new Connection({
-            sourcePoint: state.sourceConnectionPoint!,
+            sourcePoint: source,
             targetPoint: {
                 x: state.hoverConnectionPoint.point.x,
                 y: state.hoverConnectionPoint.point.y,
@@ -192,13 +183,11 @@ function completeConnection(state: EditorState, callbacks: MouseUpCallbacks): bo
         state.connections.push(connection);
         changed = true;
     } else if (dragDist < minDragDist) {
-        const sourceElement = state.elements.find(el => el.id === state.sourceConnectionPoint!.componentId);
+        const sourceElement = state.elements.find(el => el.id === source.componentId);
         if (sourceElement) selectElement(state, sourceElement);
     }
 
-    state.isConnecting = false;
-    state.sourceConnectionPoint = null;
-    state.connectionDragStartPos = null;
+    state.mode = IDLE;
     state.hoverConnectionPoint = null;
     state.canvas.style.cursor = 'default';
     callbacks.render();
@@ -219,18 +208,18 @@ function canDropInto(comp: DiagramElement, target: Module | Domain | System): bo
     return true;
 }
 
-function getDraggedComponents(state: EditorState): DiagramElement[] {
-    return state.selectedElements.length > 1 && state.draggedComponent && state.selectedElements.includes(state.draggedComponent)
+function getDraggedComponents(state: EditorState, draggedComponent: DiagramElement): DiagramElement[] {
+    return state.selectedElements.length > 1 && state.selectedElements.includes(draggedComponent)
         ? state.selectedElements
-        : (state.draggedComponent ? [state.draggedComponent] : []);
+        : [draggedComponent];
 }
 
-function handleDragEnd(state: EditorState): void {
-    if (state.potentialDropTarget && state.draggedComponent && canDropInto(state.draggedComponent, state.potentialDropTarget)) {
+function handleDragEnd(state: EditorState, draggedComponent: DiagramElement): void {
+    if (state.potentialDropTarget && canDropInto(draggedComponent, state.potentialDropTarget)) {
         const targetContainer = state.potentialDropTarget;
         const componentsToAdd: DiagramElement[] = [];
 
-        if (state.selectedElements.length > 1 && state.selectedElements.includes(state.draggedComponent)) {
+        if (state.selectedElements.length > 1 && state.selectedElements.includes(draggedComponent)) {
             const selectedIds = new Set(state.selectedElements.map(e => e.id));
             for (const comp of state.selectedElements) {
                 if (canDropInto(comp, targetContainer)) {
@@ -240,7 +229,7 @@ function handleDragEnd(state: EditorState): void {
                 }
             }
         } else {
-            componentsToAdd.push(state.draggedComponent);
+            componentsToAdd.push(draggedComponent);
         }
 
         // Remove from old parents first
@@ -262,7 +251,7 @@ function handleDragEnd(state: EditorState): void {
 
         targetContainer.recalculateBounds();
     } else if (!state.potentialDropTarget) {
-        const componentsToCheck = getDraggedComponents(state);
+        const componentsToCheck = getDraggedComponents(state, draggedComponent);
 
         for (const comp of componentsToCheck) {
             if (comp.parentId) {
