@@ -270,10 +270,13 @@ export function removeComponent(
         if (selIndex > -1) {
             state.selectedElements.splice(selIndex, 1);
         }
-        state.connections = state.connections.filter(
+        // Mutate in place (splice, not reassign) so any shared reference to
+        // this array — e.g. the serialization manager's — stays valid.
+        const keptConnections = state.connections.filter(
             conn => conn.sourcePoint.componentId !== component.id &&
                 conn.targetPoint.componentId !== component.id
         );
+        state.connections.splice(0, state.connections.length, ...keptConnections);
         ctx.render();
         ctx.saveToStorage();
     }

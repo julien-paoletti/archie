@@ -227,14 +227,21 @@ export class Editor {
     }
 
     private createSerializationManager(): SerializationManager {
+        // elements/connections/panOffset are exposed as live getters onto the
+        // editor's own state, so the manager always reads the current arrays.
+        // (Previously these were copied by reference at construction and could
+        // desync if the editor reassigned an array — the cause of connections
+        // silently not being saved.)
+        const editorState = this.state;
         const serState: SerializationState = {
-            elements: this.state.elements,
-            connections: this.state.connections,
+            get elements() { return editorState.elements; },
+            get connections() { return editorState.connections; },
             historyStack: [],
             redoStack: [],
             clipboard: [],
-            nextDotNumber: this.state.nextDotNumber,
-            panOffset: this.state.panOffset
+            get nextDotNumber() { return editorState.nextDotNumber; },
+            set nextDotNumber(v: number) { editorState.nextDotNumber = v; },
+            get panOffset() { return editorState.panOffset; }
         };
         return new SerializationManager(serState, {
             clearAll: () => this.clearAll(),
