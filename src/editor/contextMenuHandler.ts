@@ -45,6 +45,7 @@ export interface ContextMenuCallbacks {
     changeConnectionStrokeColor: (connection: Connection, color: string) => void;
     changeFontSize: (element: Label | Note, delta: number) => void;
     changeBoundaryLabelPosition: (element: Boundary, position: string) => void;
+    changeContainerTitlePosition: (element: Module | Domain | System, position: string) => void;
     startPortNumberEdit: (port: Port) => void;
     alignSelectedVertically: () => void;
     alignSelectedHorizontally: () => void;
@@ -375,6 +376,24 @@ export class ContextMenuHandler {
                     label: `Label ${pos.label}`,
                     disabled: active,
                     action: active ? undefined : () => this.callbacks.changeBoundaryLabelPosition(element, pos.value)
+                });
+            }
+        }
+
+        // Title position option (containers: Module, Domain, System)
+        if (element instanceof Module || element instanceof Domain || element instanceof System) {
+            items.push({ separator: true });
+            const positions = [
+                { value: 'top', label: 'Title Top', icon: 'arrow-bar-to-up' },
+                { value: 'bottom', label: 'Title Bottom', icon: 'arrow-bar-to-down' }
+            ];
+            for (const pos of positions) {
+                const active = pos.value === element.titlePosition;
+                items.push({
+                    icon: pos.icon,
+                    label: pos.label,
+                    disabled: active,
+                    action: active ? undefined : () => this.callbacks.changeContainerTitlePosition(element, pos.value)
                 });
             }
         }

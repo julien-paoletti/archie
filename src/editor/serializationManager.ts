@@ -192,6 +192,9 @@ export class SerializationManager {
                 if (c instanceof Boundary && c.labelPosition !== 'top-left') {
                     base.labelPosition = c.labelPosition;
                 }
+                if ((c instanceof Module || c instanceof Domain || c instanceof System) && c.titlePosition !== 'top') {
+                    base.titlePosition = c.titlePosition;
+                }
                 if ((c instanceof Component || c instanceof User || c instanceof Module || c instanceof Domain || c instanceof System || c instanceof Boundary) && c.borderColor) {
                     base.borderColor = c.borderColor;
                 }

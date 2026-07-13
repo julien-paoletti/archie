@@ -5,7 +5,7 @@
 
 import { DiagramElement } from './diagramElement';
 import { ShapeDrawer } from './shape-drawer';
-import type { DiagramElementOptions, ColorStop, ShadowOptions } from './types';
+import type { DiagramElementOptions, ColorStop, ShadowOptions, TitlePosition } from './types';
 
 export interface ContainerElementOptions extends DiagramElementOptions {
     borderRadius?: number;
@@ -17,6 +17,7 @@ export interface ContainerElementOptions extends DiagramElementOptions {
     titleFont?: string;
     padding?: number;
     childIds?: string[];
+    titlePosition?: TitlePosition;
 }
 
 export abstract class ContainerElement extends DiagramElement {
@@ -28,6 +29,7 @@ export abstract class ContainerElement extends DiagramElement {
     public titleColor: string;
     public titleFont: string;
     public padding: number;
+    public titlePosition: TitlePosition;
 
     // Children management
     protected _children: DiagramElement[] = [];
@@ -57,6 +59,7 @@ export abstract class ContainerElement extends DiagramElement {
         this.titleColor = options.titleColor ?? '#1F2937';
         this.titleFont = '';
         this.padding = 0;
+        this.titlePosition = options.titlePosition ?? 'top';
     }
 
     /**
@@ -122,14 +125,33 @@ export abstract class ContainerElement extends DiagramElement {
         return this._children.map(c => c.id);
     }
 
+    // ========================================================================
+    // Title band (title + optional description row, at top or bottom)
+    // ========================================================================
+
+    /** Total height of the title band: title row plus any description row. */
+    get titleBandHeight(): number {
+        return this.titleHeight + this.extraTopOffset;
+    }
+
+    /** World Y of the top of the title band, honoring titlePosition. */
+    get titleBandY(): number {
+        return this.titlePosition === 'bottom'
+            ? this.y + this.height - this.titleBandHeight
+            : this.y;
+    }
+
     /**
      * Check if a point is within the container's content area (for drop detection)
      */
     containsPointInContentArea(px: number, py: number): boolean {
         const contentX = this.x + this.padding / 2;
-        const contentY = this.y + this.titleHeight + this.extraTopOffset;
         const contentWidth = this.width - this.padding;
-        const contentHeight = this.height - this.titleHeight - this.extraTopOffset - this.padding / 2;
+        const contentHeight = this.height - this.titleBandHeight - this.padding / 2;
+        // Content sits opposite the title band.
+        const contentY = this.titlePosition === 'bottom'
+            ? this.y + this.padding / 2
+            : this.y + this.titleBandHeight;
 
         return px >= contentX &&
             px <= contentX + contentWidth &&
@@ -169,10 +191,10 @@ export abstract class ContainerElement extends DiagramElement {
         const childrenWidth = maxX - minX;
         const childrenHeight = maxY - minY;
 
-        const topOffset = this.titleHeight + this.extraTopOffset;
+        const bandHeight = this.titleBandHeight;
 
         let newWidth = childrenWidth + this.padding * 2;
-        let newHeight = childrenHeight + topOffset + this.padding * 1.5;
+        let newHeight = childrenHeight + bandHeight + this.padding * 1.5;
 
         // Apply minimum size constraints and center the container around children
         const finalWidth = Math.max(newWidth, this.minWidth);
@@ -183,9 +205,11 @@ export abstract class ContainerElement extends DiagramElement {
         this.x = minX - this.padding - extraWidth / 2;
         this.width = finalWidth;
 
-        // Center vertically: account for title bar (+ description) at top
+        // Center vertically: reserve the title band on its configured side
         const extraHeight = finalHeight - newHeight;
-        this.y = minY - topOffset - this.padding / 2 - extraHeight / 2;
+        this.y = this.titlePosition === 'bottom'
+            ? minY - this.padding - extraHeight / 2
+            : minY - bandHeight - this.padding / 2 - extraHeight / 2;
         this.height = finalHeight;
     }
 
@@ -270,9 +294,9 @@ export abstract class ContainerElement extends DiagramElement {
         ctx.fillStyle = highlightGradient;
         ctx.fill();
 
-        // Draw content area
+        // Draw content area (opposite side of the title band)
         const contentX = x + this.padding / 2;
-        const contentY = y + this.titleHeight;
+        const contentY = this.titlePosition === 'bottom' ? y + this.padding / 2 : y + this.titleHeight;
         const contentWidth = width - this.padding;
         const contentHeight = height - this.titleHeight - this.padding / 2;
 
@@ -310,9 +334,9 @@ export abstract class ContainerElement extends DiagramElement {
             ctx.stroke();
         }
 
-        // Draw title at TOP
+        // Draw title in the title band (top by default, bottom if configured)
         if (!this.hideTitle) {
-            drawer.drawText(this.title, x + width / 2, y + this.titleHeight / 2 + 9, {
+            drawer.drawText(this.title, x + width / 2, this.titleBandY + this.titleHeight / 2 + 9, {
                 font: this.titleFont,
                 color: this.titleColor,
                 align: 'center',

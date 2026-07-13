@@ -30,6 +30,7 @@ export interface SerializedComponent {
     text?: string;
     number?: number;
     labelPosition?: string;
+    titlePosition?: string;
     fontSize?: number;
     borderColor?: string;
     backgroundColor?: string;

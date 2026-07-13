@@ -100,8 +100,9 @@ export function startTitleEdit(state: TitleEditState, component: DiagramElement,
         input.style.fontSize = `${Math.max(10, Math.round(12 * scale))}px`;
     } else if (isContainer) {
         const titleHeight = component instanceof System ? SYSTEM_TITLE_HEIGHT : component instanceof Domain ? DOMAIN_TITLE_HEIGHT : MODULE_TITLE_HEIGHT;
+        const bandOffset = component.titleBandY - component.y;
         input.style.left = `${canvasRect.left + screenPos.x}px`;
-        input.style.top = `${canvasRect.top + screenPos.y + (titleHeight / 2 - 14) * scale}px`;
+        input.style.top = `${canvasRect.top + screenPos.y + (bandOffset + titleHeight / 2 - 14) * scale}px`;
         input.style.width = `${scaledWidth}px`;
         input.style.textAlign = 'center';
         input.style.color = '#1F2937';
@@ -174,7 +175,7 @@ export function updateTitlePosition(state: TitleEditState, callbacks: EditCallba
     const scaledWidth = comp.width * scale;
     const scaledHeight = comp.height * scale;
 
-    const isContainer = comp instanceof Module || comp instanceof Domain;
+    const isContainer = comp instanceof Module || comp instanceof Domain || comp instanceof System;
     const isBoundary = comp instanceof Boundary;
     const isUser = comp instanceof User;
     const isPort = comp instanceof Port;
@@ -195,8 +196,9 @@ export function updateTitlePosition(state: TitleEditState, callbacks: EditCallba
         state.titleInput.style.top = `${canvasRect.top + titleY - 14 * scale}px`;
     } else if (isContainer) {
         const titleHeight = comp instanceof System ? SYSTEM_TITLE_HEIGHT : comp instanceof Domain ? DOMAIN_TITLE_HEIGHT : MODULE_TITLE_HEIGHT;
+        const bandOffset = comp.titleBandY - comp.y;
         state.titleInput.style.left = `${canvasRect.left + screenPos.x}px`;
-        state.titleInput.style.top = `${canvasRect.top + screenPos.y + (titleHeight / 2 - 14) * scale}px`;
+        state.titleInput.style.top = `${canvasRect.top + screenPos.y + (bandOffset + titleHeight / 2 - 14) * scale}px`;
         state.titleInput.style.width = `${scaledWidth}px`;
     } else {
         const hasDescription = comp instanceof Component && comp.description && comp.description.length > 0;

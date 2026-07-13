@@ -3,7 +3,7 @@
  * Handles inline editing for Label, NumberedDot, Tag, Connection label, Description, and Note
  */
 
-import { Component, Connection, Label, Module, MODULE_DESCRIPTION_OFFSET, Note, NumberedDot, Port, Tag } from '../canvas/index';
+import { Component, Connection, Label, Module, Note, NumberedDot, Port, Tag } from '../canvas/index';
 import type { EditCallbacks } from './editUtils';
 import { createInput, attachInputListeners, mountAndFocus } from './editUtils';
 
@@ -115,7 +115,7 @@ export function startDescriptionEdit(state: ElementEditState, component: Compone
     const scaledFontSize = Math.max(10, Math.round(11 * scale));
 
     const descTopWorld = component instanceof Module
-        ? component.titleHeight + MODULE_DESCRIPTION_OFFSET
+        ? component.descriptionY - component.y
         : component.height / 2 + 12;
 
     const input = createInput('text', 'description-edit-input');
@@ -516,7 +516,7 @@ export function updateElementEditPositions(state: ElementEditState, callbacks: E
         const comp = state.editingDescriptionComponent;
         const screenPos = callbacks.worldToScreen(comp.x, comp.y);
         const descTopWorld = comp instanceof Module
-            ? comp.titleHeight + MODULE_DESCRIPTION_OFFSET
+            ? comp.descriptionY - comp.y
             : comp.height / 2 + 12;
         state.descriptionInput.style.left = `${canvasRect.left + screenPos.x}px`;
         state.descriptionInput.style.top = `${canvasRect.top + screenPos.y + (descTopWorld - 6) * scale}px`;

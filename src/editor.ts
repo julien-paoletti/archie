@@ -203,6 +203,12 @@ export class Editor {
                 this.saveToStorage();
                 this.render();
             },
+            changeContainerTitlePosition: (el, position) => {
+                this.saveState();
+                el.titlePosition = position as 'top' | 'bottom';
+                this.saveToStorage();
+                this.render();
+            },
             startPortNumberEdit: (port) => this.inlineEditController.startPortNumberEdit(port),
             alignSelectedVertically: () => selection.alignSelectedElementsVertically(this.state, this.ctx),
             alignSelectedHorizontally: () => selection.alignSelectedElementsHorizontally(this.state, this.ctx),

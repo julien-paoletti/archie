@@ -86,6 +86,9 @@ export function copy(state: EditorState, clipboard: ClipboardData): boolean {
         if (el instanceof Boundary && el.labelPosition !== 'top-left') {
             base.labelPosition = el.labelPosition;
         }
+        if ((el instanceof Module || el instanceof Domain || el instanceof System) && el.titlePosition !== 'top') {
+            base.titlePosition = el.titlePosition;
+        }
         if ((el instanceof Component || el instanceof User || el instanceof Module || el instanceof Domain || el instanceof System || el instanceof Boundary) && el.borderColor) {
             base.borderColor = el.borderColor;
         }

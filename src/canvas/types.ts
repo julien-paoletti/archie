@@ -112,6 +112,9 @@ export interface DomainOptions extends DiagramElementOptions {
 
 export type LabelPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 
+/** Where a container (Module/Domain/System) places its title + description band. */
+export type TitlePosition = 'top' | 'bottom';
+
 export interface BoundaryOptions extends DiagramElementOptions {
     borderRadius?: number;
     borderColor?: string;

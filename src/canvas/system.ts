@@ -71,7 +71,8 @@ export class System extends ContainerElement {
             borderWidth: this.borderWidth,
             titleColor: this.titleColor,
             titleFont: this.titleFont,
-            padding: this.padding
+            padding: this.padding,
+            titlePosition: this.titlePosition
         });
         return cloned;
     }

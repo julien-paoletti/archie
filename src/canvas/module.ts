@@ -50,9 +50,14 @@ export class Module extends ContainerElement {
         this.height = options.height ?? 150;
     }
 
+    /** World Y of the description text centerline (follows the title band). */
+    get descriptionY(): number {
+        return this.titleBandY + this.titleHeight + MODULE_DESCRIPTION_OFFSET;
+    }
+
     isPointInDescriptionArea(px: number, py: number): boolean {
         if (!this.description) return false;
-        const descY = this.y + this.titleHeight + MODULE_DESCRIPTION_OFFSET;
+        const descY = this.descriptionY;
         const descHeight = 16;
         return px >= this.x && px <= this.x + this.width &&
             py >= descY - descHeight / 2 && py <= descY + descHeight / 2;
@@ -72,7 +77,7 @@ export class Module extends ContainerElement {
         });
 
         if (this.description && !this.hideDescription) {
-            drawer.drawText(this.description, this.x + this.width / 2, this.y + this.titleHeight + MODULE_DESCRIPTION_OFFSET, {
+            drawer.drawText(this.description, this.x + this.width / 2, this.descriptionY, {
                 font: this.descriptionFont,
                 color: '#6B7280',
                 align: 'center',
@@ -102,7 +107,8 @@ export class Module extends ContainerElement {
             titleColor: this.titleColor,
             titleFont: this.titleFont,
             padding: this.padding,
-            description: this.description
+            description: this.description,
+            titlePosition: this.titlePosition
         });
     }
 
